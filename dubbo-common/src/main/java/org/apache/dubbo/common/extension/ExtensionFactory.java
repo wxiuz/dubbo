@@ -17,13 +17,16 @@
 package org.apache.dubbo.common.extension;
 
 /**
+ * 加载SPI实现的工厂，最终通过该工厂来获取具体SPI的实现
+ *
  * ExtensionFactory
  */
 @SPI
 public interface ExtensionFactory {
 
     /**
-     * Get extension.
+     * 根据SPI接口类型与名称来加载SPI实现，因为dubbo扩展了java的SPI，在dubbo中SPI的每个实现都有一个唯一的名字
+     * 所以在SPI描述文件中并不是简单的value格式，而是key-value的存储，key为对应的实现名称，value为对应的SPI实现
      *
      * @param type object type.
      * @param name object name.

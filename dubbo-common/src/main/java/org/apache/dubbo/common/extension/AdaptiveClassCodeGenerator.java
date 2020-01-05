@@ -85,17 +85,22 @@ public class AdaptiveClassCodeGenerator {
      * generate and return class code
      */
     public String generate() {
-        // no need to generate adaptive class since there's no adaptive method found.
+        // 根据SPI接口类中的@Adaptive注释的方法来自动创建Adaptive类
         if (!hasAdaptiveMethod()) {
             throw new IllegalStateException("No adaptive method exist on extension " + type.getName() + ", refuse to create the adaptive class!");
         }
 
+        // 生成Adaptive代码
         StringBuilder code = new StringBuilder();
+        // 生成的类与当前SPI接口位于同一package下
         code.append(generatePackageInfo());
+        // 生成ExtensionLoader类的import信息
         code.append(generateImports());
+        // 生成Adaptive类名
         code.append(generateClassDeclaration());
-
+        // 获取当前SPI接口中所有的方法
         Method[] methods = type.getMethods();
+        // 为每个方法生成具体实现
         for (Method method : methods) {
             code.append(generateMethod(method));
         }
@@ -198,9 +203,11 @@ public class AdaptiveClassCodeGenerator {
     private String generateMethodContent(Method method) {
         Adaptive adaptiveAnnotation = method.getAnnotation(Adaptive.class);
         StringBuilder code = new StringBuilder(512);
+        // 如果当前方法没有@Adaptive，则方法体抛出异常
         if (adaptiveAnnotation == null) {
             return generateUnsupported(method);
         } else {
+            // URL类型的参数索引位置
             int urlTypeIndex = getUrlTypeIndex(method);
 
             // found parameter in URL type

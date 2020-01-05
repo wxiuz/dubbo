@@ -26,16 +26,25 @@ import org.apache.dubbo.demo.DemoService;
 
 public class Application {
     public static void main(String[] args) throws Exception {
+        // 应用提供的服务
         ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
 
+        // 应用配置，代表当前应用信息
+        ApplicationConfig application = new ApplicationConfig("dubbo-demo-api-provider");
+
+        // 注册中心配置，代表当前服务需要将服务信息注册到的地址
+        RegistryConfig registry = new RegistryConfig("zookeeper://127.0.0.1:2181");
+
+        // dubbo服务端，用于监听客户端的请求
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+
         bootstrap
-                .application(new ApplicationConfig("dubbo-demo-api-provider"))
-                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-                .service(service)
-                .start()
+                .application(application) // 配置应用信息
+                .registry(registry) // 配置注册中心
+                .service(service)  // 注册服务
+                .start()  // 启动dubbo服务端
                 .await();
     }
 }

@@ -23,7 +23,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.spring.util.BeanFactoryUtils;
-
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -35,6 +34,8 @@ import org.springframework.context.event.ContextClosedEvent;
 import java.util.Set;
 
 /**
+ * 从SpringContext中获取Bean
+ *
  * SpringExtensionFactory
  */
 public class SpringExtensionFactory implements ExtensionFactory {
@@ -69,11 +70,12 @@ public class SpringExtensionFactory implements ExtensionFactory {
     @SuppressWarnings("unchecked")
     public <T> T getExtension(Class<T> type, String name) {
 
-        //SPI should be get from SpiExtensionFactory
+        // 如果当前type为SPI，则从SpiExtensionFactory中获取对应的实现
         if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
             return null;
         }
 
+        // 如果当前type不是SPI，则从SpringContext中获取对应的实现
         for (ApplicationContext context : CONTEXTS) {
             if (context.containsBean(name)) {
                 Object bean = context.getBean(name);

@@ -178,7 +178,9 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private DubboBootstrap() {
+        // 配置管理器
         configManager = ApplicationModel.getConfigManager();
+        // 环境信息
         environment = ApplicationModel.getEnvironment();
 
         ShutdownHookCallbacks.INSTANCE.addCallback(new ShutdownHookCallback() {

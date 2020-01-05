@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * AdaptiveExtensionFactory
+ * 最终通过SpiExtensionFactory或SpringExtensionFactory来获取对应的实现
  */
 @Adaptive
 public class AdaptiveExtensionFactory implements ExtensionFactory {
@@ -35,6 +35,7 @@ public class AdaptiveExtensionFactory implements ExtensionFactory {
     public AdaptiveExtensionFactory() {
         ExtensionLoader<ExtensionFactory> loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);
         List<ExtensionFactory> list = new ArrayList<ExtensionFactory>();
+        // 加载所有ExtensionFactory的SPI的实现
         for (String name : loader.getSupportedExtensions()) {
             list.add(loader.getExtension(name));
         }
@@ -43,6 +44,7 @@ public class AdaptiveExtensionFactory implements ExtensionFactory {
 
     @Override
     public <T> T getExtension(Class<T> type, String name) {
+        // factories包含了SpiExtensionFactory和SpringExtensionFactory
         for (ExtensionFactory factory : factories) {
             T extension = factory.getExtension(type, name);
             if (extension != null) {

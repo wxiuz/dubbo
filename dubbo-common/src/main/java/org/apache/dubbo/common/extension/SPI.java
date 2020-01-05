@@ -17,14 +17,12 @@
 
 package org.apache.dubbo.common.extension;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
- * Marker for extension interface
+ * Dubbo扩展了java标准的SPI机制，在Dubbo中，所有的SPI都必须是Interface，
+ * 并且该Interface必须使用@SPI标记，并通过@SPI的属性指定SPI的默认实现
+ *
  * <p/>
  * Changes on extension configuration file <br/>
  * Use <code>Protocol</code> as an example, its configuration file 'META-INF/dubbo/com.xxx.Protocol' is changed from: <br/>
@@ -57,7 +55,7 @@ import java.lang.annotation.Target;
 public @interface SPI {
 
     /**
-     * default extension name
+     * SPI默认实现名称
      */
     String value() default "";
 

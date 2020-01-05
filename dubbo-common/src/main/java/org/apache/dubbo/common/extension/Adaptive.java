@@ -18,13 +18,14 @@ package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.URL;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
+ *
+ * 主要用于SPI之间的依赖注入，一个SPI实现依赖于另外一个SPI，此时注入的到该SPI的实现类是另外一个SPI的Adaptive实现，
+ * 而SPI在调用的是否再根据@Adaptive属性来指定从URL中获取某个参数来决定获取哪个具体的实现
+ *
+ *
  * Provide helpful information for {@link ExtensionLoader} to inject dependency extension instance.
  *
  * @see ExtensionLoader

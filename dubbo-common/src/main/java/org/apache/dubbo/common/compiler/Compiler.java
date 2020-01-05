@@ -19,6 +19,8 @@ package org.apache.dubbo.common.compiler;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
+ * java源码编译器，默认编译器实现为javassist
+ *
  * Compiler. (SPI, Singleton, ThreadSafe)
  */
 @SPI("javassist")

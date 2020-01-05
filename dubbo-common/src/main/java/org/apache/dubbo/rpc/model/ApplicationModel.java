@@ -75,6 +75,7 @@ public class ApplicationModel {
         return getServiceRepository().lookupReferredService(serviceKey);
     }
 
+    // 加载所有的FrameworkExt实现
     private static final ExtensionLoader<FrameworkExt> loader = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
 
     public static void iniFrameworkExts() {
@@ -84,14 +85,29 @@ public class ApplicationModel {
         }
     }
 
+    /**
+     * Environment为FrameworkExt实现，SPI名称为environment
+     *
+     * @return
+     */
     public static Environment getEnvironment() {
         return (Environment) loader.getExtension(Environment.NAME);
     }
 
+    /**
+     * ConfigManager为FrameworkExt实现，SPI名称为config
+     *
+     * @return
+     */
     public static ConfigManager getConfigManager() {
         return (ConfigManager) loader.getExtension(ConfigManager.NAME);
     }
 
+    /**
+     * ServiceRepository为FrameworkExt实现，SPI名称为repository
+     *
+     * @return
+     */
     public static ServiceRepository getServiceRepository() {
         return (ServiceRepository) loader.getExtension(ServiceRepository.NAME);
     }
