@@ -112,6 +112,13 @@ public class DubboProtocol extends AbstractProtocol {
             return result.thenApply(Function.identity());
         }
 
+        /**
+         * 处理接收数据请求
+         *
+         * @param channel
+         * @param message
+         * @throws RemotingException
+         */
         @Override
         public void received(Channel channel, Object message) throws RemotingException {
             if (message instanceof Invocation) {
@@ -122,6 +129,12 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
+        /**
+         * 处理连接请求
+         *
+         * @param channel
+         * @throws RemotingException
+         */
         @Override
         public void connected(Channel channel) throws RemotingException {
             invoke(channel, ON_CONNECT_KEY);
@@ -263,6 +276,7 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
+        // 创建Dubbo监听服务，用于接收客户端的调用请求
         openServer(url);
         optimizeSerialization(url);
 
@@ -291,7 +305,7 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     /**
-     * 创建Dubbo监听服务, ProtocolServer[DubboProtocolServer] ---> ExchangeServer[HeaderExchanger]--->RemotingServer[NettyServer]
+     * 创建Dubbo监听服务, ProtocolServer[DubboProtocolServer] ---> ExchangeServer[HeaderExchangerServer]--->RemotingServer[NettyServer]
      *
      * @param url
      * @return

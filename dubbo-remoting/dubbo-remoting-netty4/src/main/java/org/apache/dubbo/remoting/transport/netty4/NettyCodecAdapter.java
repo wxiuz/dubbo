@@ -16,16 +16,15 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.Codec2;
-import org.apache.dubbo.remoting.buffer.ChannelBuffer;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.Codec2;
+import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,6 +38,7 @@ final public class NettyCodecAdapter {
 
     private final ChannelHandler decoder = new InternalDecoder();
 
+    // DubboCodec
     private final Codec2 codec;
 
     private final URL url;
@@ -59,19 +59,42 @@ final public class NettyCodecAdapter {
         return decoder;
     }
 
+    /**
+     * Netty编码器，最终转给DubboCodec来进行编码
+     */
     private class InternalEncoder extends MessageToByteEncoder {
 
+        /**
+         * 发送消息时Netty会自动调用该编码器对消息进行编码
+         *
+         * @param ctx
+         * @param msg
+         * @param out
+         * @throws Exception
+         */
         @Override
         protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
             org.apache.dubbo.remoting.buffer.ChannelBuffer buffer = new NettyBackedChannelBuffer(out);
             Channel ch = ctx.channel();
             NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
+            // ExchangeCodec
             codec.encode(channel, buffer, msg);
         }
     }
 
+    /**
+     * Netty解码器，最终转给DubboCodec来进行解码
+     */
     private class InternalDecoder extends ByteToMessageDecoder {
 
+        /**
+         * 接收消息时Netty会自动调用该解码器对消息进行解码
+         *
+         * @param ctx
+         * @param input
+         * @param out
+         * @throws Exception
+         */
         @Override
         protected void decode(ChannelHandlerContext ctx, ByteBuf input, List<Object> out) throws Exception {
 
@@ -82,6 +105,7 @@ final public class NettyCodecAdapter {
             // decode object.
             do {
                 int saveReaderIndex = message.readerIndex();
+                // ExchangeCodec
                 Object msg = codec.decode(channel, message);
                 if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
                     message.readerIndex(saveReaderIndex);

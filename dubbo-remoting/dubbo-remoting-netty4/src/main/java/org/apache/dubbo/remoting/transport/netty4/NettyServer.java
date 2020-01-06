@@ -87,12 +87,12 @@ public class NettyServer extends AbstractServer implements RemotingServer {
      */
     @Override
     protected void doOpen() throws Throwable {
-        // React模型
-        // Netty服务启动器
+
         bootstrap = new ServerBootstrap();
-        // 接收请求线程组，一个线程用于监听客户端请求
+        // Reactor模型
+        // Netty mainReactor：接收连接请求---->Selector
         bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
-        // 处理请求线程组，即IO线程
+        // Netty subReactor：处理IO读写请求---->Selector
         workerGroup = new NioEventLoopGroup(getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
                 new DefaultThreadFactory("NettyServerWorker", true));
 
@@ -110,16 +110,20 @@ public class NettyServer extends AbstractServer implements RemotingServer {
                     protected void initChannel(NioSocketChannel ch) throws Exception {
                         // FIXME: should we use getTimeout()?
                         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
+                        //
                         NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
                         if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
                             ch.pipeline().addLast("negotiation",
                                     SslHandlerInitializer.sslServerHandler(getUrl(), nettyServerHandler));
                         }
+                        // 定义HandlerPipeline
                         ch.pipeline()
+                                // 定义消息解码器
                                 .addLast("decoder", adapter.getDecoder())
+                                // 定义消息编码器
                                 .addLast("encoder", adapter.getEncoder())
                                 .addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
-                                // 业务请求处理器
+                                // 定义Netty的事件处理器
                                 .addLast("handler", nettyServerHandler);
                     }
                 });

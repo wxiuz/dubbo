@@ -42,7 +42,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
- * RPC Invocation.
+ * Rpc调用
  *
  * @serial Don't change the class name and properties.
  */

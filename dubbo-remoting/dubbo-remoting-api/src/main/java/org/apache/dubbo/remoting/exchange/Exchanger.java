@@ -24,7 +24,8 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.support.header.HeaderExchanger;
 
 /**
- * Exchanger. (SPI, Singleton, ThreadSafe)
+ * 信息交换层：Provider与Consumer都使用
+ *
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Message_Exchange_Pattern">Message Exchange Pattern</a>
  * <a href="http://en.wikipedia.org/wiki/Request-response">Request-Response</a>
@@ -33,7 +34,7 @@ import org.apache.dubbo.remoting.exchange.support.header.HeaderExchanger;
 public interface Exchanger {
 
     /**
-     * bind.
+     * Dubbo服务端使用
      *
      * @param url
      * @param handler
@@ -43,7 +44,7 @@ public interface Exchanger {
     ExchangeServer bind(URL url, ExchangeHandler handler) throws RemotingException;
 
     /**
-     * connect.
+     * Dubbo客户端使用
      *
      * @param url
      * @param handler

@@ -66,8 +66,10 @@ public class ExchangeCodec extends TelnetCodec {
     @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
         if (msg instanceof Request) {
+            // 编码请求
             encodeRequest(channel, buffer, (Request) msg);
         } else if (msg instanceof Response) {
+            // 编码相应
             encodeResponse(channel, buffer, (Response) msg);
         } else {
             super.encode(channel, buffer, msg);
@@ -208,6 +210,7 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     protected void encodeRequest(Channel channel, ChannelBuffer buffer, Request req) throws IOException {
+        // 获取序列化器，默认为hessian2
         Serialization serialization = getSerialization(channel);
         // header.
         byte[] header = new byte[HEADER_LENGTH];
@@ -231,6 +234,7 @@ public class ExchangeCodec extends TelnetCodec {
         int savedWriteIndex = buffer.writerIndex();
         buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
         ChannelBufferOutputStream bos = new ChannelBufferOutputStream(buffer);
+        // 获取序列化的工具，通过该工具来进行序列化【装饰设计模式】
         ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
         if (req.isEvent()) {
             encodeEventData(channel, out, req.getData());
