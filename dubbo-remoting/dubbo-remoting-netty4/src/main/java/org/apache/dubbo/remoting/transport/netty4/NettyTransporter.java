@@ -17,24 +17,36 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Client;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.RemotingServer;
-import org.apache.dubbo.remoting.Transporter;
+import org.apache.dubbo.remoting.*;
 
 /**
- * Default extension of {@link Transporter} using netty4.x.
+ * Dubbo默认的Transporter实现，使用了netty4，Dubbo的Consumer端与Provider端都通过该Transporter来获取具体的底层网络传输框架
  */
 public class NettyTransporter implements Transporter {
 
     public static final String NAME = "netty";
 
+    /**
+     * 启动Dubbo服务端，监听指定端口并接收客户端请求，用于Dubbo的Provider端
+     *
+     * @param url      server url
+     * @param listener 消息处理器 DecodeHandler
+     * @return
+     * @throws RemotingException
+     */
     @Override
     public RemotingServer bind(URL url, ChannelHandler listener) throws RemotingException {
         return new NettyServer(url, listener);
     }
 
+    /**
+     * 远程连接Dubbo服务端，用于发送调用请求，用于Dubbo的Consumer端
+     *
+     * @param url      server url
+     * @param listener
+     * @return
+     * @throws RemotingException
+     */
     @Override
     public Client connect(URL url, ChannelHandler listener) throws RemotingException {
         return new NettyClient(url, listener);

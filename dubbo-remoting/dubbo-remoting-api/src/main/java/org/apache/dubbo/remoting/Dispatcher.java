@@ -22,6 +22,8 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.transport.dispatcher.all.AllDispatcher;
 
 /**
+ * 事件处理转发器，默认是所有的请求都转发
+ * <p>
  * ChannelHandlerWrapper (SPI, Singleton, ThreadSafe)
  */
 @SPI(AllDispatcher.NAME)

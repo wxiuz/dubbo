@@ -35,13 +35,13 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
 
     public static final String NAME = "repository";
 
-    // services
+    // services：服务提供者
     private ConcurrentMap<String, ServiceDescriptor> services = new ConcurrentHashMap<>();
 
-    // consumers
+    // consumers：服务消费者
     private ConcurrentMap<String, ConsumerModel> consumers = new ConcurrentHashMap<>();
 
-    // providers
+    // providers：提供者信息
     private ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
 
     public ServiceRepository() {

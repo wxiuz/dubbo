@@ -22,7 +22,7 @@ import org.apache.dubbo.common.extension.SPI;
 import java.util.concurrent.Executor;
 
 /**
- * {@link Event Dubbo Event} Dispatcher
+ * Dubbo服务端事件处理机制
  *
  * @see Event
  * @see EventListener

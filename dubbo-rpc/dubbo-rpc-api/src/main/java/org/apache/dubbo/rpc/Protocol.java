@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Protocol. (API/SPI, Singleton, ThreadSafe)
+ * Dubbo支持的服务暴露协议，默认协议为dubbo协议
  */
 @SPI("dubbo")
 public interface Protocol {
@@ -37,6 +37,8 @@ public interface Protocol {
     int getDefaultPort();
 
     /**
+     * 导出服务，服务提供方使用
+     * <p>
      * Export service for remote invocation: <br>
      * 1. Protocol should record request source address after receive a request:
      * RpcContext.getContext().setRemoteAddress();<br>
@@ -53,6 +55,8 @@ public interface Protocol {
     <T> Exporter<T> export(Invoker<T> invoker) throws RpcException;
 
     /**
+     * 服务消费，服务消费方使用
+     * <p>
      * Refer a remote service: <br>
      * 1. When user calls `invoke()` method of `Invoker` object which's returned from `refer()` call, the protocol
      * needs to correspondingly execute `invoke()` method of `Invoker` object <br>

@@ -45,8 +45,11 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
 
     public AbstractEndpoint(URL url, ChannelHandler handler) {
         super(url, handler);
+        // 数据发送与接收编码与解码工具，默认使用TelnetCodec
         this.codec = getChannelCodec(url);
+        // 读取数据超时时间
         this.timeout = url.getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
+        // 连接超时时间，默认3s
         this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
     }
 

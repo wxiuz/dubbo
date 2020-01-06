@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Code generator for Adaptive class
+ * SPI对应的Adaptive类生成器，如果SPI有@Adaptive标注的方法，则自动为该类生成一个Adaptive类
  */
 public class AdaptiveClassCodeGenerator {
 
@@ -55,10 +55,10 @@ public class AdaptiveClassCodeGenerator {
     private static final String CODE_EXT_NAME_ASSIGNMENT = "String extName = %s;\n";
 
     private static final String CODE_EXT_NAME_NULL_CHECK = "if(extName == null) "
-                    + "throw new IllegalStateException(\"Failed to get extension (%s) name from url (\" + url.toString() + \") use keys(%s)\");\n";
+            + "throw new IllegalStateException(\"Failed to get extension (%s) name from url (\" + url.toString() + \") use keys(%s)\");\n";
 
     private static final String CODE_INVOCATION_ARGUMENT_NULL_CHECK = "if (arg%d == null) throw new IllegalArgumentException(\"invocation == null\"); "
-                    + "String methodName = arg%d.getMethodName();\n";
+            + "String methodName = arg%d.getMethodName();\n";
 
 
     private static final String CODE_EXTENSION_ASSIGNMENT = "%s extension = (%<s)%s.getExtensionLoader(%s.class).getExtension(extName);\n";
@@ -173,8 +173,8 @@ public class AdaptiveClassCodeGenerator {
     private String generateMethodArguments(Method method) {
         Class<?>[] pts = method.getParameterTypes();
         return IntStream.range(0, pts.length)
-                        .mapToObj(i -> String.format(CODE_METHOD_ARGUMENT, pts[i].getCanonicalName(), i))
-                        .collect(Collectors.joining(", "));
+                .mapToObj(i -> String.format(CODE_METHOD_ARGUMENT, pts[i].getCanonicalName(), i))
+                .collect(Collectors.joining(", "));
     }
 
     /**
@@ -246,13 +246,13 @@ public class AdaptiveClassCodeGenerator {
     }
 
     /**
-     * generate extName assigment code
+     * 生成SPI的Adaptive方法的实现，方法内容主要是根据URL中指定的参数来获取具体SPI的实现
      */
     private String generateExtNameAssignment(String[] value, boolean hasInvocation) {
-        // TODO: refactor it
         String getNameCode = null;
         for (int i = value.length - 1; i >= 0; --i) {
             if (i == value.length - 1) {
+                // 如果SPI上标注了默认的SPI实现，则直接获取SPI默认的实现
                 if (null != defaultExtName) {
                     if (!"protocol".equals(value[i])) {
                         if (hasInvocation) {
@@ -264,6 +264,7 @@ public class AdaptiveClassCodeGenerator {
                         getNameCode = String.format("( url.getProtocol() == null ? \"%s\" : url.getProtocol() )", defaultExtName);
                     }
                 } else {
+                    // 如果SPI没有标注默认的实现，则根据参数来获取对应的实现
                     if (!"protocol".equals(value[i])) {
                         if (hasInvocation) {
                             getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
@@ -324,16 +325,16 @@ public class AdaptiveClassCodeGenerator {
     private String generateInvocationArgumentNullCheck(Method method) {
         Class<?>[] pts = method.getParameterTypes();
         return IntStream.range(0, pts.length).filter(i -> CLASSNAME_INVOCATION.equals(pts[i].getName()))
-                        .mapToObj(i -> String.format(CODE_INVOCATION_ARGUMENT_NULL_CHECK, i, i))
-                        .findFirst().orElse("");
+                .mapToObj(i -> String.format(CODE_INVOCATION_ARGUMENT_NULL_CHECK, i, i))
+                .findFirst().orElse("");
     }
 
     /**
-     * get value of adaptive annotation or if empty return splitted simple name
+     * 获取Adaptive约定的配置Key，通过该Key来从URL参数中获取具体SPI的实现
      */
     private String[] getMethodAdaptiveValue(Adaptive adaptiveAnnotation) {
         String[] value = adaptiveAnnotation.value();
-        // value is not set, use the value generated from class name as the key
+        // 如果@Adaptive注解没有指定配置的key，则默认根据方法名称来生成对应的key
         if (value.length == 0) {
             String splitName = StringUtils.camelToSplitName(type.getSimpleName(), ".");
             value = new String[]{splitName};
@@ -367,7 +368,7 @@ public class AdaptiveClassCodeGenerator {
 
         // getter method not found, throw
         throw new IllegalStateException("Failed to create adaptive class for interface " + type.getName()
-                        + ": not found url parameter or url attribute in parameters of method " + method.getName());
+                + ": not found url parameter or url attribute in parameters of method " + method.getName());
 
     }
 

@@ -22,12 +22,31 @@ import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import java.io.IOException;
 
+/**
+ * 处理Dubbo底层数据交互协议即数据的编码与解码
+ */
 @SPI
 public interface Codec2 {
 
+    /**
+     * 编码操作，用于发送消息是按照协议进行编码
+     *
+     * @param channel
+     * @param buffer
+     * @param message
+     * @throws IOException
+     */
     @Adaptive({Constants.CODEC_KEY})
     void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException;
 
+    /**
+     * 解码操作，用于接收到消息时按照协议进行解码
+     *
+     * @param channel
+     * @param buffer
+     * @return
+     * @throws IOException
+     */
     @Adaptive({Constants.CODEC_KEY})
     Object decode(Channel channel, ChannelBuffer buffer) throws IOException;
 

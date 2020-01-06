@@ -37,9 +37,18 @@ import java.io.OutputStream;
 @Deprecated
 public class TransportCodec extends AbstractCodec {
 
+    /**
+     * 内容编码，用于发送信息
+     *
+     * @param channel
+     * @param buffer
+     * @param message 待发送的消息
+     * @throws IOException
+     */
     @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException {
         OutputStream output = new ChannelBufferOutputStream(buffer);
+        // 根据配置序列化策略选择对应的序列化方式
         ObjectOutput objectOutput = getSerialization(channel).serialize(channel.getUrl(), output);
         encodeData(channel, objectOutput, message);
         objectOutput.flushBuffer();
@@ -48,6 +57,14 @@ public class TransportCodec extends AbstractCodec {
         }
     }
 
+    /**
+     * 内容解码，用于接收信息
+     *
+     * @param channel
+     * @param buffer
+     * @return
+     * @throws IOException
+     */
     @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
         InputStream input = new ChannelBufferInputStream(buffer);

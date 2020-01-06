@@ -36,16 +36,14 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeInvocationArgument;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DECODE_IN_IO_THREAD_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_DECODE_IN_IO_THREAD;
 import static org.apache.dubbo.rpc.support.RpcUtils.sieveUnnecessaryAttachments;
 
 /**
- * Dubbo codec.
+ * Dubbo协议底层自己定了传输协议，该组件就是用于编码与解码Dubbo协议组件
  */
 public class DubboCodec extends ExchangeCodec {
 

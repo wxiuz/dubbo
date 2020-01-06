@@ -36,11 +36,11 @@ import java.util.regex.Pattern;
 import static org.apache.dubbo.common.constants.CommonConstants.*;
 
 /**
- *  该类是Dubbo对于java SPI扩展的实现，在Dubbo扩展的SPI中，每个SPI接口都有一个自己的ExtensionLoader，
- *  该ExtensionLoader只用于加载当前类型的SPI实现。
- *
- *  Dubbo的SPI是基于java的SPI思想，并对其进行了扩展实现，而不是直接使用java的SPI。
- *  Dubbo中的所有需要作为SPI的接口，都必须使用@SPI进行标记。
+ * 该类是Dubbo对于java SPI扩展的实现，在Dubbo扩展的SPI中，每个SPI接口都有一个自己的ExtensionLoader，
+ * 该ExtensionLoader只用于加载当前类型的SPI实现。
+ * <p>
+ * Dubbo的SPI是基于java的SPI思想，并对其进行了扩展实现，而不是直接使用java的SPI。
+ * Dubbo中的所有需要作为SPI的接口，都必须使用@SPI进行标记。
  *
  * </ul>
  *
@@ -63,31 +63,39 @@ public class ExtensionLoader<T> {
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
 
-    // static属性，所有的SPI接口的ExtensionLoader共享该属性，SPI接口与ExtensionLoader映射
-    private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<>();
-
-    // static属性，所有的SPI接口的ExtensionLoader共享该属性，SPI接口与其实现映射
-    private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>();
-
     // SPI接口类型
     private final Class<?> type;
 
-    // ExtensionLoader最终是通过该ExtensionFactory来加载SPI的实现
+    // static属性，所有的SPI接口的ExtensionLoader共享该属性，SPI接口与ExtensionLoader映射
+    private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<>();
+
+    // static属性，所有的SPI接口的ExtensionLoader共享该属性，SPI接口SPI实现映射
+    private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>();
+
+    // ExtensionLoader最终获取SPI依赖工厂
     private final ExtensionFactory objectFactory;
 
+    // 当前SPI实现的所有名称映射，一个SPI实现类可以有多个名称
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<>();
 
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
+
     // SPI的所有默认激活的实现，即被@Activate标注的实现类
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<>();
+
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
+
     // SPI的Adaptive实例
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
+
     // SPI的Adaptive实现类，一个SPI只能有一个Adaptive实现类
     private volatile Class<?> cachedAdaptiveClass = null;
+
     // SPI默认的实现，通过@SPI中的属性来标记
     private String cachedDefaultName;
+
     private volatile Throwable createAdaptiveInstanceError;
+
     // SPI的所有Wrapper实现类
     private Set<Class<?>> cachedWrapperClasses;
 
@@ -99,7 +107,7 @@ public class ExtensionLoader<T> {
         if (type == ExtensionFactory.class) {
             objectFactory = null;
         } else {
-            // 所有非ExtensionFactory的SPI该属性都是AdaptiveExtensionFactory实例
+            // 所有非ExtensionFactory的SPI该属性值都是AdaptiveExtensionFactory实例
             // ExtensionLoader通过该工厂来获取SPI实现的依赖，并最终是实现依赖注入
             objectFactory = ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension();
         }
@@ -374,17 +382,6 @@ public class ExtensionLoader<T> {
         return cachedAdaptiveInstance.get();
     }
 
-//    public T getPrioritizedExtensionInstance() {
-//        Set<String> supported = getSupportedExtensions();
-//
-//        Set<T> instances = new HashSet<>();
-//        Set<T> prioritized = new HashSet<>();
-//        for (String s : supported) {
-//
-//        }
-//
-//    }
-
     /**
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
      * will be thrown.
@@ -419,7 +416,7 @@ public class ExtensionLoader<T> {
      * @return non-null
      */
     public T getOrDefaultExtension(String name) {
-        return containsExtension(name)  ? getExtension(name) : getDefaultExtension();
+        return containsExtension(name) ? getExtension(name) : getDefaultExtension();
     }
 
     /**
@@ -761,7 +758,6 @@ public class ExtensionLoader<T> {
 
     /**
      * 加载所有默认目录下的SPI实现
-     *
      */
     private Map<String, Class<?>> loadExtensionClasses() {
         // 缓存SPI的默认实现名称
@@ -811,7 +807,7 @@ public class ExtensionLoader<T> {
         try {
             Enumeration<java.net.URL> urls = null;
             ClassLoader classLoader = findClassLoader();
-            
+
             // try to load from ExtensionLoader's ClassLoader first
             if (extensionLoaderClassLoaderFirst) {
                 ClassLoader extensionLoaderClassLoader = ExtensionLoader.class.getClassLoader();
@@ -819,8 +815,8 @@ public class ExtensionLoader<T> {
                     urls = extensionLoaderClassLoader.getResources(fileName);
                 }
             }
-            
-            if(urls == null || !urls.hasMoreElements()) {
+
+            if (urls == null || !urls.hasMoreElements()) {
                 if (classLoader != null) {
                     urls = classLoader.getResources(fileName);
                 } else {

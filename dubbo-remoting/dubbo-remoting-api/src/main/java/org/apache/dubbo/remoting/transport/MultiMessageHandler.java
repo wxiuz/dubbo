@@ -22,6 +22,7 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 
 /**
+ * 事件处理器代理，该代理可以一次接收多个请求，并将所有请求转到实际的事件处理器
  *
  * @see MultiMessage
  */
@@ -35,11 +36,14 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
         if (message instanceof MultiMessage) {
+            // 如果收到的消息为MultiMessage，则需要将消息拆分为单个的消息去处理
             MultiMessage list = (MultiMessage) message;
             for (Object obj : list) {
+                // 交由实际的事件处理器进行处理
                 handler.received(channel, obj);
             }
         } else {
+            // 如果收到的消息就是单个消息，则直接交由处理器处理
             handler.received(channel, message);
         }
     }

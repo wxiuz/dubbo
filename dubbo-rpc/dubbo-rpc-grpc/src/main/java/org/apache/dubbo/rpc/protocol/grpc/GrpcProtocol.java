@@ -15,24 +15,14 @@ package org.apache.dubbo.rpc.protocol.grpc;/*
  * limitations under the License.
  */
 
+import io.grpc.*;
+import io.grpc.netty.NettyServerBuilder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.ProtocolServer;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
-
-import io.grpc.BindableService;
-import io.grpc.CallOptions;
-import io.grpc.Channel;
-import io.grpc.ManagedChannel;
-import io.grpc.Server;
-import io.grpc.netty.NettyServerBuilder;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -43,7 +33,7 @@ import java.util.concurrent.ConcurrentMap;
 import static org.apache.dubbo.rpc.Constants.INTERFACES;
 
 /**
- *
+ * gRpc协议
  */
 public class GrpcProtocol extends AbstractProxyProtocol {
 
@@ -62,7 +52,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
             NettyServerBuilder builder =
                     NettyServerBuilder
-                    .forPort(url.getPort())
+                            .forPort(url.getPort())
                             .fallbackHandlerRegistry(registry);
 
             Server originalServer = GrpcOptionsUtils.buildServerBuilder(url, builder).build();

@@ -31,6 +31,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Dubbo环境信息
+ */
 public class Environment extends LifecycleAdapter implements FrameworkExt {
     public static final String NAME = "environment";
 
@@ -47,6 +50,11 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     private DynamicConfiguration dynamicConfiguration;
 
+    /**
+     * SPI加载后自动调用
+     *
+     * @throws IllegalStateException
+     */
     @Override
     public void initialize() throws IllegalStateException {
         ConfigManager configManager = ApplicationModel.getConfigManager();

@@ -25,13 +25,13 @@ import java.util.concurrent.Executor;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
 /**
- * ThreadPool
+ * 服务端处理请求的线程池，默认为固定线程池
  */
 @SPI("fixed")
 public interface ThreadPool {
 
     /**
-     * Thread pool
+     * 可以通过threadpool参数来指定服务器使用哪种线程池
      *
      * @param url URL contains thread parameter
      * @return thread pool

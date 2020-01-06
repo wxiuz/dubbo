@@ -49,7 +49,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     protected String interfaceName;
 
     /**
-     * The interface class of the exported service
+     * 当前服务对应的接口类
      */
     protected Class<?> interfaceClass;
 
@@ -74,10 +74,13 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     protected String providerIds;
 
     /**
-     * whether it is a GenericService
+     * 服务实现是否为GenericService
      */
     protected volatile String generic;
 
+    /**
+     * 服务元数据信息
+     */
     protected ServiceMetadata serviceMetadata;
 
     public ServiceConfigBase() {
@@ -178,6 +181,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         if (ref == null) {
             throw new IllegalStateException("ref not allow null!");
         }
+        // 检查服务实例是否为指定的接口实现
         if (!interfaceClass.isInstance(ref)) {
             throw new IllegalStateException("The class "
                     + ref.getClass().getName() + " unimplemented interface "

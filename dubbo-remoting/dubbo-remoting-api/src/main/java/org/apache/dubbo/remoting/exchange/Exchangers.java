@@ -115,6 +115,7 @@ public class Exchangers {
     }
 
     public static Exchanger getExchanger(String type) {
+        // 默认为header
         return ExtensionLoader.getExtensionLoader(Exchanger.class).getExtension(type);
     }
 

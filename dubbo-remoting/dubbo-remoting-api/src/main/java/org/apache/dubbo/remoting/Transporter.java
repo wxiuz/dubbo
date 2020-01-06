@@ -21,10 +21,9 @@ import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
- * Transporter. (SPI, Singleton, ThreadSafe)
- * <p>
- * <a href="http://en.wikipedia.org/wiki/Transport_Layer">Transport Layer</a>
- * <a href="http://en.wikipedia.org/wiki/Client%E2%80%93server_model">Client/Server</a>
+ * 网络传输层框架定义，即Dubbo支持的网络通信框架，其中Dubbo支持netty，mina等网络框架。
+ * 默认使用的是netty框架，其中传输层框架定义包括了Dubbo服务端与Dubbo客户端，服务端定
+ * 义了Dubbo服务监听，客户端定义连接服务端
  *
  * @see org.apache.dubbo.remoting.Transporters
  */
@@ -32,7 +31,7 @@ import org.apache.dubbo.common.extension.SPI;
 public interface Transporter {
 
     /**
-     * Bind a server.
+     * Dubbo服务端使用，用于启动Dubbo监听服务
      *
      * @param url     server url
      * @param handler
@@ -44,7 +43,7 @@ public interface Transporter {
     RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException;
 
     /**
-     * Connect to a server.
+     * Dubbo客户端使用，用于连接Dubbo服务端
      *
      * @param url     server url
      * @param handler

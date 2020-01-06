@@ -29,28 +29,8 @@ import org.apache.dubbo.common.threadpool.concurrent.ScheduledCompletableFuture;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ConfigCenterConfig;
-import org.apache.dubbo.config.ConsumerConfig;
-import org.apache.dubbo.config.DubboShutdownHook;
-import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.MetricsConfig;
-import org.apache.dubbo.config.ModuleConfig;
-import org.apache.dubbo.config.MonitorConfig;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.ProviderConfig;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.ServiceConfigBase;
-import org.apache.dubbo.config.SslConfig;
-import org.apache.dubbo.config.bootstrap.builders.ApplicationBuilder;
-import org.apache.dubbo.config.bootstrap.builders.ConsumerBuilder;
-import org.apache.dubbo.config.bootstrap.builders.ProtocolBuilder;
-import org.apache.dubbo.config.bootstrap.builders.ProviderBuilder;
-import org.apache.dubbo.config.bootstrap.builders.ReferenceBuilder;
-import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
-import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
+import org.apache.dubbo.config.*;
+import org.apache.dubbo.config.bootstrap.builders.*;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -71,12 +51,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -100,12 +75,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
- * See {@link ApplicationModel} and {@link ExtensionLoader} for why this class is designed to be singleton.
- *
- * The bootstrap class of Dubbo
- *
- * Get singleton instance by calling static method {@link #getInstance()}.
- * Designed as singleton because some classes inside Dubbo, such as ExtensionLoader, are designed only for one instance per process.
+ * Dubbo服务端启动器，通过该启动器来启动一个Dubbo服务用于接收客户端的调用请求
  *
  * @since 2.7.5
  */
@@ -698,7 +668,7 @@ public class DubboBootstrap extends GenericEventListener {
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " is starting...");
             }
-            // 1. export Dubbo Services
+            // 1. 导出Dubbo服务
             exportServices();
 
             // Not only provider register
@@ -857,18 +827,18 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private void exportServices() {
+        // 从配置管理器中获取所有注册的Service,并进行一个个导出
         configManager.getServices().forEach(sc -> {
-            // TODO, compatible with ServiceConfig.export()
             ServiceConfig serviceConfig = (ServiceConfig) sc;
             serviceConfig.setBootstrap(this);
 
+            // 异步导出
             if (exportAsync) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
-                Future<?> future = executor.submit(() -> {
-                    sc.export();
-                });
+                Future<?> future = executor.submit(sc::export);
                 asyncExportingFutures.add(future);
             } else {
+                // 导出服务
                 sc.export();
                 exportedServices.add(sc);
             }

@@ -21,6 +21,9 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.rpc.ProtocolServer;
 
+/**
+ * 协议服务端，每个协议都有对应的Server实现，该Server监听指定端口用于接收客户端的请求
+ */
 public class DubboProtocolServer implements ProtocolServer {
 
     private RemotingServer server;

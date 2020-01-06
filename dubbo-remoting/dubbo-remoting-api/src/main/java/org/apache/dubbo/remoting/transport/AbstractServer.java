@@ -23,11 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.RemotingServer;
+import org.apache.dubbo.remoting.*;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -35,11 +31,7 @@ import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
-import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
-import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
-import static org.apache.dubbo.remoting.Constants.DEFAULT_IDLE_TIMEOUT;
-import static org.apache.dubbo.remoting.Constants.IDLE_TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.Constants.*;
 
 /**
  * AbstractServer
@@ -58,14 +50,18 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
 
     public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
+        // 服务器监听的地址
         localAddress = getUrl().toInetSocketAddress();
-
+        // 服务监听IP[多网卡情况]
         String bindIp = getUrl().getParameter(Constants.BIND_IP_KEY, getUrl().getHost());
+        // 服务器监听Port
         int bindPort = getUrl().getParameter(Constants.BIND_PORT_KEY, getUrl().getPort());
+        // 如果没有执行，则使用0.0.0.0
         if (url.getParameter(ANYHOST_KEY, false) || NetUtils.isInvalidLocalHost(bindIp)) {
             bindIp = ANYHOST_VALUE;
         }
         bindAddress = new InetSocketAddress(bindIp, bindPort);
+        // 服务端channel限制，默认不做限制
         this.accepts = url.getParameter(ACCEPTS_KEY, DEFAULT_ACCEPTS);
         this.idleTimeout = url.getParameter(IDLE_TIMEOUT_KEY, DEFAULT_IDLE_TIMEOUT);
         try {
@@ -77,6 +73,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
             throw new RemotingException(url.toInetSocketAddress(), null, "Failed to bind " + getClass().getSimpleName()
                     + " on " + getLocalAddress() + ", cause: " + t.getMessage(), t);
         }
+        // 处理请求的线程池
         executor = executorRepository.createExecutorIfAbsent(url);
     }
 

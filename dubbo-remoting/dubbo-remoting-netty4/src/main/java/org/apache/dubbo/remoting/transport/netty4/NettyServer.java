@@ -16,20 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.RemotingServer;
-import org.apache.dubbo.remoting.transport.AbstractServer;
-import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
-import org.apache.dubbo.remoting.utils.UrlUtils;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
@@ -41,6 +27,15 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.*;
+import org.apache.dubbo.remoting.transport.AbstractServer;
+import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -69,30 +64,39 @@ public class NettyServer extends AbstractServer implements RemotingServer {
     /**
      * the boss channel that receive connections and dispatch these to worker channel.
      */
-	private io.netty.channel.Channel channel;
+    private io.netty.channel.Channel channel;
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
+    /**
+     * @param url
+     * @param handler 事件处理器
+     * @throws RemotingException
+     */
     public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
         // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
-        // the handler will be warped: MultiMessageHandler->HeartbeatHandler->handler
+        // the handler will be warped: MultiMessageHandler->HeartbeatHandler->handler，其中handler又是一个代理模型
         super(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME), ChannelHandlers.wrap(handler, url));
     }
 
     /**
-     * Init and start netty server
+     * 启动Netty服务
      *
      * @throws Throwable
      */
     @Override
     protected void doOpen() throws Throwable {
+        // React模型
+        // Netty服务启动器
         bootstrap = new ServerBootstrap();
-
+        // 接收请求线程组，一个线程用于监听客户端请求
         bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
+        // 处理请求线程组，即IO线程
         workerGroup = new NioEventLoopGroup(getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
                 new DefaultThreadFactory("NettyServerWorker", true));
 
+        // NettyServer也为一个ChannelHandler，最终会委派给内部的ChannelHandler来处理
         final NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(), this);
         channels = nettyServerHandler.getChannels();
 
@@ -115,6 +119,7 @@ public class NettyServer extends AbstractServer implements RemotingServer {
                                 .addLast("decoder", adapter.getDecoder())
                                 .addLast("encoder", adapter.getEncoder())
                                 .addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
+                                // 业务请求处理器
                                 .addLast("handler", nettyServerHandler);
                     }
                 });
