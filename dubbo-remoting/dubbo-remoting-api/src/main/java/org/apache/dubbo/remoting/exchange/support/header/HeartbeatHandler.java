@@ -38,6 +38,9 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
     public static final String KEY_WRITE_TIMESTAMP = "WRITE_TIMESTAMP";
 
     public HeartbeatHandler(ChannelHandler handler) {
+        /**
+         * 【DispatcherChannelHandler：扩展点】--->DecodeHandler--->HeaderExchangeHandler--->ExchangeHandlerAdapter
+         */
         super(handler);
     }
 

@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -23,9 +25,6 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractChannel;
 import org.apache.dubbo.remoting.utils.PayloadDropper;
-
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -43,11 +42,11 @@ final class NettyChannel extends AbstractChannel {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyChannel.class);
     /**
-     * the cache for netty channel and dubbo channel
+     * netty channel到dubbo channel的映射
      */
     private static final ConcurrentMap<Channel, NettyChannel> CHANNEL_MAP = new ConcurrentHashMap<Channel, NettyChannel>();
     /**
-     * netty channel
+     * netty channel：netty的原始channel
      */
     private final Channel channel;
 

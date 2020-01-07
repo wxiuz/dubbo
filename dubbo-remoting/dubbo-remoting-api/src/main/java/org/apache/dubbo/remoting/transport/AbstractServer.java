@@ -43,6 +43,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
     ExecutorService executor;
     private InetSocketAddress localAddress;
     private InetSocketAddress bindAddress;
+    // netty服务连接数控制
     private int accepts;
     private int idleTimeout;
 
@@ -61,7 +62,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
             bindIp = ANYHOST_VALUE;
         }
         bindAddress = new InetSocketAddress(bindIp, bindPort);
-        // 服务端channel限制，默认不做限制
+        // 服务端最大连接配置，默认不限制
         this.accepts = url.getParameter(ACCEPTS_KEY, DEFAULT_ACCEPTS);
         this.idleTimeout = url.getParameter(IDLE_TIMEOUT_KEY, DEFAULT_IDLE_TIMEOUT);
         try {
@@ -161,6 +162,12 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
         return idleTimeout;
     }
 
+    /**
+     * 连接成功处理
+     *
+     * @param ch dubbo的NettyChannel
+     * @throws RemotingException
+     */
     @Override
     public void connected(Channel ch) throws RemotingException {
         // If the server has entered the shutdown process, reject any new connection
@@ -171,6 +178,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
         }
 
         Collection<Channel> channels = getChannels();
+        // 服务端连接数验证，超过配置连接数，则拒绝连接
         if (accepts > 0 && channels.size() > accepts) {
             logger.error("Close channel " + ch + ", cause: The server " + ch.getLocalAddress() + " connections greater than max config " + accepts);
             ch.close();

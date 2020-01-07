@@ -24,7 +24,11 @@ import org.apache.dubbo.remoting.*;
  */
 public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
-    // 服务器端事件处理器
+    /**
+     * 服务器端事件处理器：
+     * <p>
+     * MultiMessageHandler--->HeartbeatHandler--->【DispatcherChannelHandler：扩展点】--->DecodeHandler--->HeaderExchangeHandler--->ExchangeHandlerAdapter
+     */
     private final ChannelHandler handler;
 
     private volatile URL url;
@@ -120,6 +124,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         if (closed) {
             return;
         }
+        // MultiMessageHandler
         handler.connected(ch);
     }
 

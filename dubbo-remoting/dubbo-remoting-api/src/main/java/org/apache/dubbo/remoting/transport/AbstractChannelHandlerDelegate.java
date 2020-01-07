@@ -23,6 +23,9 @@ import org.apache.dubbo.remoting.RemotingException;
 
 public abstract class AbstractChannelHandlerDelegate implements ChannelHandlerDelegate {
 
+    /**
+     * HeartbeatHandler--->【DispatcherChannelHandler：扩展点】--->DecodeHandler--->HeaderExchangeHandler--->ExchangeHandlerAdapter
+     */
     protected ChannelHandler handler;
 
     protected AbstractChannelHandlerDelegate(ChannelHandler handler) {
@@ -38,21 +41,47 @@ public abstract class AbstractChannelHandlerDelegate implements ChannelHandlerDe
         return handler;
     }
 
+    /**
+     * 客户端建立连接
+     *
+     * @param channel channel.
+     * @throws RemotingException
+     */
     @Override
     public void connected(Channel channel) throws RemotingException {
         handler.connected(channel);
     }
 
+    /**
+     * 客户端断开连接
+     *
+     * @param channel channel.
+     * @throws RemotingException
+     */
     @Override
     public void disconnected(Channel channel) throws RemotingException {
         handler.disconnected(channel);
     }
 
+    /**
+     * 发送数据
+     *
+     * @param channel channel.
+     * @param message message.
+     * @throws RemotingException
+     */
     @Override
     public void sent(Channel channel, Object message) throws RemotingException {
         handler.sent(channel, message);
     }
 
+    /**
+     * 接收数据
+     *
+     * @param channel channel.
+     * @param message message.
+     * @throws RemotingException
+     */
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
         handler.received(channel, message);

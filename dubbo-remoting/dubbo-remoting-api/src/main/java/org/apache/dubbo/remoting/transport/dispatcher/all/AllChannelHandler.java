@@ -29,6 +29,9 @@ import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
+/**
+ * 该处理器默认将所有的事件都转发到线程池中处理
+ */
 public class AllChannelHandler extends WrappedChannelHandler {
 
     public AllChannelHandler(ChannelHandler handler, URL url) {
@@ -37,8 +40,10 @@ public class AllChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void connected(Channel channel) throws RemotingException {
+        // 获取线程池
         ExecutorService executor = getExecutorService();
         try {
+            // 事件放到线程池中处理
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CONNECTED));
         } catch (Throwable t) {
             throw new ExecutionException("connect event", channel, getClass() + " error when process connected event .", t);
@@ -61,10 +66,10 @@ public class AllChannelHandler extends WrappedChannelHandler {
         try {
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
         } catch (Throwable t) {
-        	if(message instanceof Request && t instanceof RejectedExecutionException){
+            if (message instanceof Request && t instanceof RejectedExecutionException) {
                 sendFeedback(channel, (Request) message, t);
                 return;
-        	}
+            }
             throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
         }
     }

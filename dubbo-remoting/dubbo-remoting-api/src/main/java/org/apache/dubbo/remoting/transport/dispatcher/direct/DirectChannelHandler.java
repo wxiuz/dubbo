@@ -28,6 +28,9 @@ import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 
 import java.util.concurrent.ExecutorService;
 
+/**
+ * 所有请求都直接在IO线程上处理
+ */
 public class DirectChannelHandler extends WrappedChannelHandler {
 
     public DirectChannelHandler(ChannelHandler handler, URL url) {
