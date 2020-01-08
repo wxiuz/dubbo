@@ -20,15 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.ListenableFilter;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.ProtocolServer;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 
 import java.util.List;
 
@@ -36,12 +28,17 @@ import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
 
 /**
- * ListenerProtocol
+ * Dubbo的AOP机制，通过Dubbo的自动AOP功能进行包装原始的协议实现，在服务导出时构建Filter调用链
  */
 public class ProtocolFilterWrapper implements Protocol {
 
     private final Protocol protocol;
 
+    /**
+     * 用于Dubbo AOP
+     *
+     * @param protocol
+     */
     public ProtocolFilterWrapper(Protocol protocol) {
         if (protocol == null) {
             throw new IllegalArgumentException("protocol == null");
@@ -49,6 +46,28 @@ public class ProtocolFilterWrapper implements Protocol {
         this.protocol = protocol;
     }
 
+
+    /**
+     * 构建一个Filter链条
+     * <p>
+     * <p>
+     *
+     * Filter1------->Filter2------->Filter3------->......------->FilterN【调用原始Invoker】
+     *                                                               ^
+     *                                                               |
+     *                                                               |
+     *
+     * Invoker1------>Invoker2------>Invoker3------>.......------>InvokerN
+     *
+     * 最终返回Invoker1，调用链路为
+     * Invoker1-->Filter1-->Invoker2-->Filter2-->Invoker3-->Filter3-->......-->InvokerN-->FilterN--->原始Invoker
+     *
+     * @param invoker
+     * @param key
+     * @param group
+     * @param <T>
+     * @return
+     */
     private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
         Invoker<T> last = invoker;
         List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
@@ -137,9 +156,15 @@ public class ProtocolFilterWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+        /**
+         * 如果是服务注册
+         */
         if (UrlUtils.isRegistry(invoker.getUrl())) {
             return protocol.export(invoker);
         }
+        /**
+         * 如果是服务暴露，则需要构建调用链
+         */
         return protocol.export(buildInvokerChain(invoker, SERVICE_FILTER_KEY, CommonConstants.PROVIDER));
     }
 

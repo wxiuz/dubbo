@@ -42,6 +42,15 @@ public class AdaptiveExtensionFactory implements ExtensionFactory {
         factories = Collections.unmodifiableList(list);
     }
 
+    /**
+     * 根据type与name来获取实例，如果type是dubbo的SPI接口，则通过SpiExtensionFactory来
+     * 获取实例对象，如果type不是dubbo的SPI接口，则通过SpringExtensionFactory来获取实例
+     *
+     * @param type object type.
+     * @param name object name.
+     * @param <T>
+     * @return
+     */
     @Override
     public <T> T getExtension(Class<T> type, String name) {
         // factories包含了SpiExtensionFactory和SpringExtensionFactory
