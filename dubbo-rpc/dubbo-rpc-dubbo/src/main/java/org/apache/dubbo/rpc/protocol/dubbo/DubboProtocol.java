@@ -73,6 +73,14 @@ public class DubboProtocol extends AbstractProtocol {
      */
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
 
+        /**
+         * 最终的调用处理，获取当前应用暴露对应服务，然后调用相关方法
+         *
+         * @param channel
+         * @param message
+         * @return
+         * @throws RemotingException
+         */
         @Override
         public CompletableFuture<Object> reply(ExchangeChannel channel, Object message) throws RemotingException {
 
@@ -83,6 +91,7 @@ public class DubboProtocol extends AbstractProtocol {
             }
 
             Invocation inv = (Invocation) message;
+            // 获取到真实的服务对象
             Invoker<?> invoker = getInvoker(channel, inv);
             // need to consider backward-compatibility if it's a callback
             if (Boolean.TRUE.toString().equals(inv.getAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
@@ -107,7 +116,9 @@ public class DubboProtocol extends AbstractProtocol {
                     return null;
                 }
             }
+            // 在调用线程中生成一个RpcContext
             RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
+            // 服务调用
             Result result = invoker.invoke(inv);
             return result.thenApply(Function.identity());
         }
@@ -231,7 +242,9 @@ public class DubboProtocol extends AbstractProtocol {
             inv.getAttachments().put(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
         }
 
+        // 根据请求的参数获取服务key，规则为：serviceGroup/serviceName[:serviceVersion]:port
         String serviceKey = serviceKey(port, path, (String) inv.getAttachments().get(VERSION_KEY), (String) inv.getAttachments().get(GROUP_KEY));
+        // 根据服务key获取真实的暴露的服务，每次暴露服务都会将相关服务存到该Map中
         DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
 
         if (exporter == null) {
@@ -251,13 +264,23 @@ public class DubboProtocol extends AbstractProtocol {
         return DEFAULT_PORT;
     }
 
+    /**
+     * 服务导出
+     *
+     * @param invoker Service invoker
+     * @param <T>
+     * @return
+     * @throws RpcException
+     */
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+        // 服务URL
         URL url = invoker.getUrl();
 
-        // export service.
+        // 为服务生成key，具体规则为：serviceGroup/serviceName[:serviceVersion]:port
         String key = serviceKey(url);
         DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
+        // 存储暴露的服务，Consumer调用时则从中取出对应的服务来调用
         exporterMap.put(key, exporter);
 
         //export an stub service for dispatching event

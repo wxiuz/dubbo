@@ -19,48 +19,18 @@ package org.apache.dubbo.common.utils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
-import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.CLASSIFIER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
-import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
-import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
-import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
-import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.RegistryConstants.*;
 
 public class UrlUtils {
 
     /**
-     * in the url string,mark the param begin
+     * url中queryString参数标志
      */
     private final static String URL_PARAM_STARTING_SYMBOL = "?";
 
@@ -72,9 +42,13 @@ public class UrlUtils {
         if (address.contains("://") || address.contains(URL_PARAM_STARTING_SYMBOL)) {
             url = address;
         } else {
+            // 一个注册中心配置可能有多个IP地址，多个地址使用,进行分隔
             String[] addresses = COMMA_SPLIT_PATTERN.split(address);
+            // 取第一个地址作为主地址
             url = addresses[0];
+            // 如果有多个IP地址
             if (addresses.length > 1) {
+                // 其他的地址作为backup地址
                 StringBuilder backup = new StringBuilder();
                 for (int i = 1; i < addresses.length; i++) {
                     if (i > 1) {
@@ -82,6 +56,7 @@ public class UrlUtils {
                     }
                     backup.append(addresses[i]);
                 }
+                // url = 192.168.1.2:2181?backup=192.168.1.3:2181,192.168.1.4:2181,192.168.1.5:2181
                 url += URL_PARAM_STARTING_SYMBOL + RemotingConstants.BACKUP_KEY + "=" + backup.toString();
             }
         }
@@ -161,10 +136,18 @@ public class UrlUtils {
         return u;
     }
 
+    /**
+     * 多个注册中心使用|或;进行分隔
+     *
+     * @param address
+     * @param defaults
+     * @return
+     */
     public static List<URL> parseURLs(String address, Map<String, String> defaults) {
         if (address == null || address.length() == 0) {
             return null;
         }
+        // 配置多个注册中心，多个注册中心用|或者;进行分隔
         String[] addresses = REGISTRY_SPLIT_PATTERN.split(address);
         if (addresses == null || addresses.length == 0) {
             return null; //here won't be empty

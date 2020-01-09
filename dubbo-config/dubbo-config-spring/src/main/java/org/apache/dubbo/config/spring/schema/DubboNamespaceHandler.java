@@ -17,22 +17,13 @@
 package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ConsumerConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.MetricsConfig;
-import org.apache.dubbo.config.ModuleConfig;
-import org.apache.dubbo.config.MonitorConfig;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.ProviderConfig;
-import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.*;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
 import org.apache.dubbo.config.spring.util.AnnotatedBeanDefinitionRegistryUtils;
-
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
@@ -89,7 +80,7 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
     }
 
     /**
-     * Register {@link DubboLifecycleComponentApplicationListener} as a Spring Bean
+     * 注册监听器，用于启动DubboBootstrap Server
      *
      * @param registry {@link BeanDefinitionRegistry}
      * @see DubboLifecycleComponentApplicationListener

@@ -31,6 +31,9 @@ import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 import java.util.concurrent.ExecutorService;
 
+/**
+ * 所有事件处理都没有使用线程池，dubbo根据不同的配置策略来实现对应的Handler，并覆盖响应的方法
+ */
 public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
     protected static final Logger logger = LoggerFactory.getLogger(WrappedChannelHandler.class);

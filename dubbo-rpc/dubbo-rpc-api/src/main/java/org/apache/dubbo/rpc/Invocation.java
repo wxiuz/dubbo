@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * 调用请求
+ * 调用请求参数
  *
  * @serial Don't change the class name and package name.
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
@@ -28,10 +28,15 @@ import java.util.stream.Stream;
  */
 public interface Invocation {
 
+    /**
+     * 待调用的需要调用服务名称
+     *
+     * @return
+     */
     String getTargetServiceUniqueName();
 
     /**
-     * get method name.
+     * 待调用的调用服务方法名
      *
      * @return method name.
      * @serial
@@ -40,13 +45,14 @@ public interface Invocation {
 
 
     /**
-     * get the interface name
+     * 待调用的服务接口名称
+     *
      * @return
      */
     String getServiceName();
 
     /**
-     * get parameter types.
+     * 待调用的服务方法参数类型
      *
      * @return parameter types.
      * @serial
@@ -65,7 +71,7 @@ public interface Invocation {
     }
 
     /**
-     * get arguments.
+     * 服务调用入参
      *
      * @return arguments.
      * @serial

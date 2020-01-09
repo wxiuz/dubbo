@@ -134,6 +134,7 @@ public abstract class AbstractConfig implements Serializable {
                     if (parameter != null && parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
+                        // 根据get方法名称获取属性名称，如getVersion()方法，则返回的为version
                         key = calculatePropertyFromGetter(name);
                     }
 

@@ -115,12 +115,24 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
     }
 
+    /**
+     * 连接请求事件
+     *
+     * @param channel channel.
+     * @throws RemotingException
+     */
     @Override
     public void connected(Channel channel) throws RemotingException {
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         handler.connected(exchangeChannel);
     }
 
+    /**
+     * 连接断开事件
+     *
+     * @param channel channel.
+     * @throws RemotingException
+     */
     @Override
     public void disconnected(Channel channel) throws RemotingException {
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
@@ -165,6 +177,13 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
     }
 
+    /**
+     * 接收消息事件
+     *
+     * @param channel channel.
+     * @param message message.
+     * @throws RemotingException
+     */
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
         final ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);

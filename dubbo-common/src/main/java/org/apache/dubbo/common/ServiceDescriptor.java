@@ -13,6 +13,15 @@ public class ServiceDescriptor {
     protected String version;
     protected volatile String group;
 
+    /**
+     * 构建ServiceKey
+     * serviceGroup/serviceName[:serviceVersion]
+     *
+     * @param path
+     * @param group
+     * @param version
+     * @return
+     */
     public static String buildServiceKey(String path, String group, String version) {
         StringBuilder buf = new StringBuilder();
         if (group != null && group.length() > 0) {

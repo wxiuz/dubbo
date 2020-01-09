@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
- * 该处理器默认将所有的事件都转发到线程池中处理
+ * 所有消息都派发到线程池，包括请求，响应，连接事件，断开事件，心跳等。
  */
 public class AllChannelHandler extends WrappedChannelHandler {
 
@@ -38,6 +38,12 @@ public class AllChannelHandler extends WrappedChannelHandler {
         super(handler, url);
     }
 
+    /**
+     * 连接事件
+     *
+     * @param channel
+     * @throws RemotingException
+     */
     @Override
     public void connected(Channel channel) throws RemotingException {
         // 获取线程池

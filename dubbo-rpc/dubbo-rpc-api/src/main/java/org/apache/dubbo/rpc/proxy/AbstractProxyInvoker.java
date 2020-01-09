@@ -19,21 +19,14 @@ package org.apache.dubbo.rpc.proxy;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.AsyncContextImpl;
-import org.apache.dubbo.rpc.AsyncRpcResult;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 /**
- * InvokerWrapper
+ * 代表一个具体服务实现抽象
  */
 public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     Logger logger = LoggerFactory.getLogger(AbstractProxyInvoker.class);
@@ -44,6 +37,13 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
 
     private final URL url;
 
+    /**
+     * 真实服务对象的包装信息
+     *
+     * @param proxy 真实的服务
+     * @param type  真实服务所实现的接口
+     * @param url   真实服务参数
+     */
     public AbstractProxyInvoker(T proxy, Class<T> type, URL url) {
         if (proxy == null) {
             throw new IllegalArgumentException("proxy == null");
@@ -78,9 +78,17 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     public void destroy() {
     }
 
+    /**
+     * 服务调用
+     *
+     * @param invocation 内部包含了真实服务调用需要的参数
+     * @return
+     * @throws RpcException
+     */
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
         try {
+            // 服务方法调用
             Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
             CompletableFuture<Object> future = wrapWithFuture(value, invocation);
             CompletableFuture<AppResponse> appResponseFuture = future.handle((obj, t) -> {
@@ -107,9 +115,9 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         }
     }
 
-    private CompletableFuture<Object> wrapWithFuture (Object value, Invocation invocation) {
+    private CompletableFuture<Object> wrapWithFuture(Object value, Invocation invocation) {
         if (RpcContext.getContext().isAsyncStarted()) {
-            return ((AsyncContextImpl)(RpcContext.getContext().getAsyncContext())).getInternalFuture();
+            return ((AsyncContextImpl) (RpcContext.getContext().getAsyncContext())).getInternalFuture();
         } else if (value instanceof CompletableFuture) {
             return (CompletableFuture<Object>) value;
         }

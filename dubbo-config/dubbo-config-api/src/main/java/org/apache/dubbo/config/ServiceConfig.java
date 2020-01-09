@@ -283,10 +283,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 serviceMetadata
         );
 
-        // 获取注册中心地址
+        // 获取注册中心地址，返回List说明支持多注册中心
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
-        // 一个服务可以以多种协议进行暴露
+        // 一个服务可以通过多种协议暴露并注册到多个注册中心上
         for (ProtocolConfig protocolConfig : protocols) {
             String pathKey = URL.buildKey(getContextPath(protocolConfig)
                     .map(p -> p + "/" + path)
@@ -300,13 +300,23 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
+    /**
+     * 以某种协议暴露服务到多个注册中心
+     *
+     * @param protocolConfig 服务暴露的协议
+     * @param registryURLs   服务注册到的注册中心，可能是多个注册中心
+     */
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+        // 协议名称
         String name = protocolConfig.getName();
+
+        // 如果没有配置，默认是dubbo协议
         if (StringUtils.isEmpty(name)) {
             name = DUBBO;
         }
 
         Map<String, String> map = new HashMap<String, String>();
+        // 服务暴露，则说明当前是服务提供方
         map.put(SIDE_KEY, PROVIDER_SIDE);
 
         // 将相关配置的get方法返回值以参数的形式放到map中
@@ -318,8 +328,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         // appendParameters(map, provider, Constants.DEFAULT_KEY);
         AbstractConfig.appendParameters(map, provider);
         AbstractConfig.appendParameters(map, protocolConfig);
+        // 将ServiceConfig中配置信息放到Map中
         AbstractConfig.appendParameters(map, this);
 
+        // 如果有方法配置，则需要解析方法配置
         if (CollectionUtils.isNotEmpty(getMethods())) {
             for (MethodConfig method : getMethods()) {
                 AbstractConfig.appendParameters(map, method, method.getName());
@@ -385,12 +397,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 map.put(REVISION_KEY, revision);
             }
 
+            // 生成当前待暴露服务的包装类
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 logger.warn("No method found in service interface " + interfaceClass.getName());
                 map.put(METHODS_KEY, ANY_VALUE);
             } else {
-                // 当前服务暴露的方法
+                // 当前服务暴露的方法，包括接口中的所有方法，多个方法通过逗号,分隔
                 map.put(METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
             }
         }
@@ -410,6 +423,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         // 服务端口
         Integer port = findConfigedPorts(protocolConfig, name, map);
 
+        // 创建服务暴露的URL
         URL url = new URL(name, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), map);
 
         // You can customize Configurator to append extra parameters
@@ -455,7 +469,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                             registryURL = registryURL.addParameter(PROXY_KEY, proxy);
                         }
 
+                        // 为暴露的服务创建一个Invoker，最终Consumer发起调用，服务端通过该Invoker来完成调用
+                        // 通过代理工厂来创建，默认使用的代理工厂为JavassistProxyFactory
                         Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString()));
+                        // 用于包装Invoker与ServiceConfig
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
                         Exporter<?> exporter = protocol.export(wrapperInvoker);

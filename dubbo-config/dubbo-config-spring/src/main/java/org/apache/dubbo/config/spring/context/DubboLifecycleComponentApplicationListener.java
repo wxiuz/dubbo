@@ -21,7 +21,6 @@ import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
@@ -60,6 +59,7 @@ public class DubboLifecycleComponentApplicationListener implements ApplicationLi
     protected void onContextRefreshedEvent(ContextRefreshedEvent event) {
         ApplicationContext context = event.getApplicationContext();
         DubboBootstrap bootstrap = loadBootsttrapAsBean(context);
+        // 启动DubboBootstrap Server
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
         }

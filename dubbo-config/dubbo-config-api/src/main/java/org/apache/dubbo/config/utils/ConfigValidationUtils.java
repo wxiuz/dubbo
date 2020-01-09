@@ -130,15 +130,17 @@ public class ConfigValidationUtils {
                         // 如果没有配置服务协议，则默认使用dubbo协议
                         map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                     }
-                    // 构建URL参数
+                    // 构建URL参数，一个address可能包含多个注册中心
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
+                    // 筛选出需要进行注册的注册中心地址
                     for (URL url : urls) {
-
                         url = URLBuilder.from(url)
                                 .addParameter(REGISTRY_KEY, url.getProtocol())
                                 .setProtocol(extractRegistryType(url))
                                 .build();
+                        // 如果是Provider方，并且配置要注册到当前注册中心，或者是Consumer方，并且配置了邀订阅当前注册中心，
+                        // 此时需要将该注册中心返回，即需要将服务注册到该注册中心
                         if ((provider && url.getParameter(REGISTER_KEY, true))
                                 || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
                             registryList.add(url);

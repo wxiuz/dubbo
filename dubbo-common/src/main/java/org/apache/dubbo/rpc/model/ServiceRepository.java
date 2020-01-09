@@ -23,11 +23,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfigBase;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -60,6 +56,8 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
     }
 
     /**
+     * 注册服务提供者
+     * <p>
      * See {@link #registerService(Class)}
      * <p>
      * we assume:
@@ -80,6 +78,16 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         return serviceDescriptor;
     }
 
+    /**
+     * 注册服务消费者
+     *
+     * @param serviceKey
+     * @param attributes
+     * @param serviceModel
+     * @param rc
+     * @param proxy
+     * @param serviceMetadata
+     */
     public void registerConsumer(String serviceKey,
                                  Map<String, Object> attributes,
                                  ServiceDescriptor serviceModel,

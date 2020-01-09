@@ -19,13 +19,7 @@ package org.apache.dubbo.rpc.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_RAW_RETURN;
-import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
-import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_DEFAULT;
-import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
-import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_PROTOBUF;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 
 public class ProtocolUtils {
 
@@ -37,6 +31,17 @@ public class ProtocolUtils {
                 url.getParameter(GROUP_KEY));
     }
 
+    /**
+     * 生成服务key的规则
+     * <p>
+     * serviceGroup/serviceName[:serviceVersion]:port
+     *
+     * @param port
+     * @param serviceName
+     * @param serviceVersion
+     * @param serviceGroup
+     * @return
+     */
     public static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {
         StringBuilder buf = new StringBuilder();
         if (StringUtils.isNotEmpty(serviceGroup)) {

@@ -17,7 +17,7 @@
 package org.apache.dubbo.common;
 
 /**
- * Node. (API/SPI, Prototype, ThreadSafe)
+ * 代表当前节点信息，每个暴露的服务都属于某个节点
  */
 public interface Node {
 
