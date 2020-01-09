@@ -261,6 +261,7 @@ public class AdaptiveClassCodeGenerator {
                             getNameCode = String.format("url.getParameter(\"%s\", \"%s\")", value[i], defaultExtName);
                         }
                     } else {
+                        // 如果是Protocol SPI, 优先从协议名称获取，如注册中心为zookeeper://192.168.1.3:2181,
                         getNameCode = String.format("( url.getProtocol() == null ? \"%s\" : url.getProtocol() )", defaultExtName);
                     }
                 } else {

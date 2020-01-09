@@ -52,8 +52,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.*;
 import static org.apache.dubbo.config.Constants.*;
@@ -284,6 +284,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         );
 
         // 获取注册中心地址，返回List说明支持多注册中心
+        // 地址格式为：registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?accepts=100&application=demo-provider&application.version=1.0.0&check=false&compiler=jdk&dubbo=2.0.2&owner=demo&pid=8540&qos.port=22222&register=true&registry=zookeeper&timestamp=1578572225516&version=1.1.0
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
         // 一个服务可以通过多种协议暴露并注册到多个注册中心上
@@ -443,7 +444,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 if (CollectionUtils.isNotEmpty(registryURLs)) {
-                    // 注册中心地址
+                    // 将服务注册到多个注册中心上去
                     for (URL registryURL : registryURLs) {
                         //if protocol is only injvm ,not register
                         if (LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
@@ -468,13 +469,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                             registryURL = registryURL.addParameter(PROXY_KEY, proxy);
                         }
 
-                        // 为暴露的服务创建一个Invoker，最终Consumer发起调用，服务端通过该Invoker来完成调用
-                        // 通过代理工厂来创建，默认使用的代理工厂为JavassistProxyFactory
-                        Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString()));
+                        // 将需要暴露的服务URL作为注册URL的参数，并对服务暴露的URL进行URLEncode
+                        registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString());
+
+                        Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL);
+
                         // 用于包装Invoker与ServiceConfig
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
-                        // 此处protocol最终会调用到RegistryProtocol,中间穿插了两个包装类
+                        // 服务提供端的registryURL中协议为registry，则该处获取协议名称为registry来进行服务暴露，
+                        // 即调用的是RegistryProtocol对象的export方法
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
                         exporters.add(exporter);
                     }

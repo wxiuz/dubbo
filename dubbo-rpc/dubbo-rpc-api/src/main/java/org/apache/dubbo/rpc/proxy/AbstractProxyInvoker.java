@@ -35,6 +35,9 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
 
     private final Class<T> type;
 
+    /**
+     * 当前服务对应的注册中心URL，其中服务暴露URL作为注册中心URL中的一个参数放在export参数中
+     */
     private final URL url;
 
     /**

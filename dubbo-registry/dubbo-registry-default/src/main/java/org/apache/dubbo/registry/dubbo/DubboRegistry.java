@@ -39,7 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RECONNECT_PERIOD_KEY;
 
 /**
- * DubboRegistry
+ * 使用dubbo作为注册中心
  */
 public class DubboRegistry extends FailbackRegistry {
 
