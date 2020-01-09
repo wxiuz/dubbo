@@ -33,6 +33,7 @@ public class Application {
 
         // 应用配置，代表当前应用信息
         ApplicationConfig application = new ApplicationConfig("dubbo-demo-api-provider");
+        application.setOwner("wuxiuzhao");
 
         // 注册中心配置，代表当前服务需要将服务信息注册到的地址
         RegistryConfig registry = new RegistryConfig("zookeeper://127.0.0.1:2181");

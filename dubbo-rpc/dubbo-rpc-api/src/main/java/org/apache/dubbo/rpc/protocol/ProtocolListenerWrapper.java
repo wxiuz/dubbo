@@ -19,13 +19,7 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.ExporterListener;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.InvokerListener;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.ProtocolServer;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.listener.ListenerExporterWrapper;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 
@@ -36,12 +30,17 @@ import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENE
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 
 /**
- * ListenerProtocol
+ * Dubbo的AOP机制，通过Dubbo的自动AOP功能进行包装原始的协议实现
  */
 public class ProtocolListenerWrapper implements Protocol {
 
     private final Protocol protocol;
 
+    /**
+     * 用于Dubbo AOP
+     *
+     * @param protocol
+     */
     public ProtocolListenerWrapper(Protocol protocol) {
         if (protocol == null) {
             throw new IllegalArgumentException("protocol == null");

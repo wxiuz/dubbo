@@ -36,11 +36,16 @@ import java.util.regex.Pattern;
 import static org.apache.dubbo.common.constants.CommonConstants.*;
 
 /**
- * 该类是Dubbo对于java SPI扩展的实现，在Dubbo扩展的SPI中，每个SPI接口都有一个自己的ExtensionLoader，
- * 该ExtensionLoader只用于加载当前类型的SPI实现。
+ * Dubbo的SPI机制实现，Dubbo SPI并不是Java SPI，而是根据Java SPI思想，重新实现了
+ * 一套自己的SPI机制。其比Java SPI功能更加强大，其实现了
+ * （1）按需创建实例
+ * （2）支持IOC
+ * （3）支持AOP
+ *
  * <p>
- * Dubbo的SPI是基于java的SPI思想，并对其进行了扩展实现，而不是直接使用java的SPI。
- * Dubbo中的所有需要作为SPI的接口，都必须使用@SPI进行标记。
+ * 注：
+ * （1）Dubbo中的所有需要作为SPI的接口，都必须使用@SPI进行标记。
+ * （2）Dubbo中每个SPI的实现都有一个唯一的名字，所以在SPI配置文件中以key-value形式配置
  *
  * </ul>
  *
@@ -53,12 +58,10 @@ public class ExtensionLoader<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(ExtensionLoader.class);
 
-    // 支持加载的目录：META-INF/services/
     private static final String SERVICES_DIRECTORY = "META-INF/services/";
 
     private static final String DUBBO_DIRECTORY = "META-INF/dubbo/";
 
-    // 支持加载的目录：META-INF/dubbo/internal/
     private static final String DUBBO_INTERNAL_DIRECTORY = DUBBO_DIRECTORY + "internal/";
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
@@ -113,20 +116,13 @@ public class ExtensionLoader<T> {
         }
     }
 
-    /**
-     * 判断是否有@SPI注解
-     *
-     * @param type
-     * @param <T>
-     * @return
-     */
     private static <T> boolean withExtensionAnnotation(Class<T> type) {
         return type.isAnnotationPresent(SPI.class);
     }
 
     /**
-     * 获取加载SPI的实现的Loader，每个不同的SPI接口都有一个独立的ExtensionLoader，通过该Loader来
-     * 加载具体的SPI实现
+     * 获取加载SPI的实现的Loader，每个不同的SPI接口都有一个独立的ExtensionLoader，
+     * 通过该Loader来加载具体的SPI实现
      *
      * @param type
      * @param <T>
@@ -383,8 +379,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
-     * will be thrown.
+     * 根据SPI实现的名称来获取对应的实例
      */
     @SuppressWarnings("unchecked")
     public T getExtension(String name) {
@@ -622,10 +617,11 @@ public class ExtensionLoader<T> {
                 EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             }
-            // 依赖注入
+            // Dubbo SPI的IOC实现
             injectExtension(instance);
+
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
-            // 如果当前SPI有包装类，则将当前类注入到包装类中
+            // 如果当前SPI有包装类，则完成Dubbo的AOP
             if (CollectionUtils.isNotEmpty(wrapperClasses)) {
                 // 包装类以级联的方式，最终返回的是包装类 Wrapper1--->Wrapper2--->Wrapper3--->....--->instance
                 for (Class<?> wrapperClass : wrapperClasses) {
@@ -645,7 +641,10 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 对SPI实例进行依赖注入
+     * 对SPI实例进行依赖注入，通过反射获取当前实例的所有方法
+     * 并通过set方法对依赖的属性进行依赖注入，如果一个SPI依
+     * 赖于另外一个SPI，则会自动通过SPI机制加载对应的SPI实
+     * 例并完成注入功能。
      *
      * @param instance
      * @return
