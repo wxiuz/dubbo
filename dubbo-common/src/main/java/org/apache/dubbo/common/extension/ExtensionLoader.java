@@ -599,7 +599,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 创建指定名称的SPI实现的实例
+     * 创建指定名称的SPI实现的实例，如果当前SPI有包装类实现，此时会自动进行包装，实现Dubbo SPI的IOC
      *
      * @param name
      * @return
@@ -1044,6 +1044,11 @@ public class ExtensionLoader<T> {
     private Class<?> createAdaptiveExtensionClass() {
         // 如果当前的type没有Adaptive实现类，则判断当前type是否有@Adaptive的方法，如果有,则自动生成Adaptive实现类
         String code = new AdaptiveClassCodeGenerator(type, cachedDefaultName).generate();
+        System.out.println();
+        System.out.println();
+        System.out.println(">>>>>>>>>>>>>>>" + type.getCanonicalName() + " adaptive code begin <<<<<<<<<<<<<<");
+        System.out.println(code);
+        System.out.println(">>>>>>>>>>>>>>>" + type.getCanonicalName() + " adaptive code end <<<<<<<<<<<<<<");
         ClassLoader classLoader = findClassLoader();
         // java源码编译器
         org.apache.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();

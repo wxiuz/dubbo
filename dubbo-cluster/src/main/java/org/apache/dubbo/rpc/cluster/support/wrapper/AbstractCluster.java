@@ -32,10 +32,22 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_INTERCEPTOR_KEY;
 
+/**
+ * 集群的公共逻辑实现
+ */
 public abstract class AbstractCluster implements Cluster {
 
+    /**
+     * 构建集群拦截器链
+     *
+     * @param clusterInvoker
+     * @param key
+     * @param <T>
+     * @return
+     */
     private <T> Invoker<T> buildClusterInterceptors(AbstractClusterInvoker<T> clusterInvoker, String key) {
         AbstractClusterInvoker<T> last = clusterInvoker;
+        // ConsumerContextClusterInterceptor
         List<ClusterInterceptor> interceptors = ExtensionLoader.getExtensionLoader(ClusterInterceptor.class).getActivateExtension(clusterInvoker.getUrl(), key);
 
         if (!interceptors.isEmpty()) {

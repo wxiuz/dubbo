@@ -32,19 +32,16 @@
                     address="zookeeper://127.0.0.1:2181"
                     check="false"
                     register="true"
-                    version="1.1.0"
-                    accepts="100"/>
+                    version="1.1.0"/>
 
     <dubbo:protocol id="dubbo-protocol"
                     name="dubbo"
-                    port="28000"
+                    port="20080"
                     register="true"
                     host="localhost"
-                    contextpath="/xml-demo"
                     accepts="120"
                     iothreads="10"
                     server="netty"
-                    path="/stux"
                     dispatcher="all"
                     dispather="direct"
                     threadpool="fixed"

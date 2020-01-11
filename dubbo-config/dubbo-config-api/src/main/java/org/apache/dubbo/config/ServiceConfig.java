@@ -62,6 +62,11 @@ import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.*;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 
+/**
+ * 服务提供者配置
+ *
+ * @param <T>
+ */
 public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     public static final Logger logger = LoggerFactory.getLogger(ServiceConfig.class);
@@ -436,12 +441,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         String scope = url.getParameter(SCOPE_KEY);
         // don't export when none is configured
         if (!SCOPE_NONE.equalsIgnoreCase(scope)) {
-
-            // export to local if the config is not remote (export to remote only when config is remote)
             if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
+                // 暴露服务到本地，即用injvm协议进行协议暴露，
                 exportLocal(url);
             }
-            // export to remote if the config is not local (export to local only when config is local)
+
+            // 如果scope不为local则将服务暴露到远程
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 if (CollectionUtils.isNotEmpty(registryURLs)) {
                     // 将服务注册到多个注册中心上去
@@ -470,7 +475,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         }
 
                         // 将需要暴露的服务URL作为注册URL的参数，并对服务暴露的URL进行URLEncode
-                        registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString());
+                        registryURL = registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString());
 
                         Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL);
 
@@ -510,6 +515,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * always export injvm
      */
     private void exportLocal(URL url) {
+        // local => injvm://127.0.0.1:0/....
         URL local = URLBuilder.from(url)
                 .setProtocol(LOCAL_PROTOCOL)
                 .setHost(LOCALHOST_VALUE)

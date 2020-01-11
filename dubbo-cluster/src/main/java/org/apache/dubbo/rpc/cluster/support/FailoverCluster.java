@@ -21,8 +21,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
 
 /**
- * {@link FailoverClusterInvoker}
- *
+ * 失败自动切换，出现失败重试其他服务器
  */
 public class FailoverCluster extends AbstractCluster {
 

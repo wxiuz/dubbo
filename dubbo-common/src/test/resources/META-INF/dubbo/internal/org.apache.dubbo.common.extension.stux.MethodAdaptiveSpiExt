@@ -1,0 +1,1 @@
+method-adaptive=org.apache.dubbo.common.extension.stux.impl.MethodAdaptiveSpiExtImpl

@@ -1,0 +1,1 @@
+spi-class-adaptive=org.apache.dubbo.common.extension.stux.impl.ClassAdaptiveSpiExtImpl

@@ -23,17 +23,13 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
 
 /**
- * Cluster. (SPI, Singleton, ThreadSafe)
- * <p>
- * <a href="http://en.wikipedia.org/wiki/Computer_cluster">Cluster</a>
- * <a href="http://en.wikipedia.org/wiki/Fault-tolerant_system">Fault-Tolerant</a>
- *
+ * 将多个Invoker包装为一个Invoker，对上层调用透明
  */
 @SPI(FailoverCluster.NAME)
 public interface Cluster {
 
     /**
-     * Merge the directory invokers to a virtual invoker.
+     * 用于创建一个ClusterInvoker，内部包含了所有的可以使用Invoker集合
      *
      * @param <T>
      * @param directory

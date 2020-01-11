@@ -158,21 +158,22 @@ public class RegistryProtocol implements Protocol {
      */
     @Override
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
-        // registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?accepts=100&application=demo-provider&application.version=1.0.0&check=false&compiler=jdk&dubbo=2.0.2&owner=demo&pid=8540&qos.port=22222&register=true&registry=zookeeper&timestamp=1578572225516&version=1.1.0
+        // zookeeper://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?accepts=100&application=demo-provider&application.version=1.0.0&check=false&compiler=jdk&dubbo=2.0.2&export=dubbo%3A%2F%2F10.15.83.65%3A28000%2Fxml-demo%2Forg.apache.dubbo.demo.DemoService%3Faccepts%3D120%26anyhost%3Dtrue%26bean.name%3Dorg.apache.dubbo.demo.DemoService%26bind.ip%3D10.15.83.65%26bind.port%3D28000%26deprecated%3Dfalse%26dispatcher%3Dall%26dubbo%3D2.0.2%26dynamic%3Dtrue%26exchanger%3Dheader%26generic%3Dfalse%26interface%3Dorg.apache.dubbo.demo.DemoService%26iothreads%3D10%26methods%3DsayHello%2CsayHelloAsync%26pid%3D11028%26register%3Dtrue%26release%3D%26server%3Dnetty%26side%3Dprovider%26threadpool%3Dfixed%26timestamp%3D1578722527992&owner=demo&pid=11028&qos.port=22222&register=true&timestamp=1578722527985&version=1.1.0
         URL registryUrl = getRegistryUrl(originInvoker);
-        // dubbo://127.0.0.1:20880/.....
+        // dubbo://10.15.83.65:28000/xml-demo/org.apache.dubbo.demo.DemoService?accepts=120&anyhost=true&bean.name=org.apache.dubbo.demo.DemoService&bind.ip=10.15.83.65&bind.port=28000&deprecated=false&dispatcher=all&dubbo=2.0.2&dynamic=true&exchanger=header&generic=false&interface=org.apache.dubbo.demo.DemoService&iothreads=10&methods=sayHello,sayHelloAsync&pid=11028&register=true&release=&server=netty&side=provider&threadpool=fixed&timestamp=1578722527992
         URL providerUrl = getProviderUrl(originInvoker);
 
         // Subscribe the override data
         // FIXME When the provider subscribes, it will affect the scene : a certain JVM exposes the service and call
         //  the same service. Because the subscribed is cached key with the name of the service, it causes the
         //  subscription information to cover.
+        // provider://10.15.83.65:28000/xml-demo/org.apache.dubbo.demo.DemoService?accepts=120&anyhost=true&bean.name=org.apache.dubbo.demo.DemoService&bind.ip=10.15.83.65&bind.port=28000&category=configurators&check=false&deprecated=false&dispatcher=all&dubbo=2.0.2&dynamic=true&exchanger=header&generic=false&interface=org.apache.dubbo.demo.DemoService&iothreads=10&methods=sayHello,sayHelloAsync&pid=11028&register=true&release=&server=netty&side=provider&threadpool=fixed&timestamp=1578722527992
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
         overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
-        // 导出服务【导出到远程和本地】
+        // 导出服务
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         // 由注册中心URL获取注册中心实现zookeeper, nacos, redis，consul等
@@ -386,6 +387,7 @@ public class RegistryProtocol implements Protocol {
     }
 
     private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
+        // 代表多个可用的Invoker，可以看做List<Invoker>，但是List中Invoker可能因为注册中心的推送而发生改变
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
@@ -394,12 +396,16 @@ public class RegistryProtocol implements Protocol {
         URL subscribeUrl = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
         if (!ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(REGISTER_KEY, true)) {
             directory.setRegisteredConsumerUrl(getRegisteredConsumerUrl(subscribeUrl, url));
+            // 将消费者端信息注册到注册中心
             registry.register(directory.getRegisteredConsumerUrl());
         }
+        // Router负责从多个Invoker中选择出一个Invoker来调用
         directory.buildRouterChain(subscribeUrl);
+        // 订阅服务提供者节点，当节点发生变更时自动通知客户端
         directory.subscribe(subscribeUrl.addParameter(CATEGORY_KEY,
                 PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY));
 
+        // 根据directory创建一个对上层调用透明的Invoker，返回的是一个ClusterInvoker
         Invoker invoker = cluster.join(directory);
         return invoker;
     }

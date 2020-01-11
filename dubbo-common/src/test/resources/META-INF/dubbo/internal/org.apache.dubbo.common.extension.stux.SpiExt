@@ -1,0 +1,2 @@
+spi-ext=org.apache.dubbo.common.extension.stux.impl.SpiExtImpl
+spi-ext-wrapper=org.apache.dubbo.common.extension.stux.impl.SpiExtWrapper
