@@ -24,23 +24,22 @@ import org.apache.dubbo.rpc.RpcException;
 import java.util.List;
 
 /**
- * Directory. (SPI, Prototype, ThreadSafe)
- * <p>
- * <a href="http://en.wikipedia.org/wiki/Directory_service">Directory Service</a>
+ * Directory代表多个 Invoker，可以把它看成 List<Invoker> ，但与 List 不同的是，
+ * 它的值可能是动态变化的，比如注册中心推送变更
  *
  * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
  */
 public interface Directory<T> extends Node {
 
     /**
-     * get service type.
+     * 服务接口
      *
      * @return service type.
      */
     Class<T> getInterface();
 
     /**
-     * list invokers.
+     * 获取所有Invoker，每个Invoker代表一个服务提供结点
      *
      * @return invokers
      */

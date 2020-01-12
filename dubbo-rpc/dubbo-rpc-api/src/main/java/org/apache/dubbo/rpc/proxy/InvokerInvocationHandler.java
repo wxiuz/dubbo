@@ -25,10 +25,13 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 /**
- * InvokerHandler
+ * Consumer端JDK代理创建服务的代理对象，InvokerHandler
  */
 public class InvokerInvocationHandler implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(InvokerInvocationHandler.class);
+    /**
+     * 服务端的调用，一般为一个ClusterInvoker
+     */
     private final Invoker<?> invoker;
 
     public InvokerInvocationHandler(Invoker<?> handler) {
@@ -55,6 +58,9 @@ public class InvokerInvocationHandler implements InvocationHandler {
             invoker.destroy();
         }
 
+        /**
+         * 构建请求调用入参数
+         */
         RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args);
         rpcInvocation.setTargetServiceUniqueName(invoker.getUrl().getServiceKey());
 

@@ -50,10 +50,10 @@ import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.*;
 import static org.apache.dubbo.common.constants.RegistryConstants.*;
 import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
-import static org.apache.dubbo.registry.Constants.*;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
-import static org.apache.dubbo.remoting.Constants.*;
+import static org.apache.dubbo.registry.Constants.*;
 import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
+import static org.apache.dubbo.remoting.Constants.*;
 import static org.apache.dubbo.rpc.Constants.*;
 import static org.apache.dubbo.rpc.cluster.Constants.*;
 
@@ -78,6 +78,7 @@ public class RegistryProtocol implements Protocol {
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //providerurl <--> exporter
     private final ConcurrentMap<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
+    // 根据Dubbo的IOC功能，会自动注入该Cluster
     private Cluster cluster;
     private Protocol protocol;
     // 根据配置的注册中心协议获取对应的注册中心实现
@@ -178,9 +179,7 @@ public class RegistryProtocol implements Protocol {
 
         // 由注册中心URL获取注册中心实现zookeeper, nacos, redis，consul等
         final Registry registry = getRegistry(originInvoker);
-        //
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
-        //判断是否需要注册到注册中心
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
             // 将dubbo服务地址注册到注册中心服务端
@@ -209,6 +208,7 @@ public class RegistryProtocol implements Protocol {
 
         return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(key, s -> {
             Invoker<?> invokerDelegate = new InvokerDelegate<>(originInvoker, providerUrl);
+            // 通过真实协议进行服务暴露，例如：dubbo，redis，Grpc等
             return new ExporterChangeableWrapper<>((Exporter<T>) protocol.export(invokerDelegate), originInvoker);
         });
     }
@@ -362,6 +362,15 @@ public class RegistryProtocol implements Protocol {
         return key;
     }
 
+    /**
+     * 引用服务
+     *
+     * @param type Service class
+     * @param url  URL address for the remote service
+     * @param <T>
+     * @return
+     * @throws RpcException
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
@@ -401,7 +410,7 @@ public class RegistryProtocol implements Protocol {
         }
         // Router负责从多个Invoker中选择出一个Invoker来调用
         directory.buildRouterChain(subscribeUrl);
-        // 订阅服务提供者节点，当节点发生变更时自动通知客户端
+        // 订阅节点providers,configurators,routers，当节点发生变更时自动通知客户端
         directory.subscribe(subscribeUrl.addParameter(CATEGORY_KEY,
                 PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY));
 

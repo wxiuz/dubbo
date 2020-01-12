@@ -23,7 +23,9 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
 
 /**
- * 将多个Invoker包装为一个Invoker，对上层调用透明
+ * 将多个Invoker包装为一个Invoker，对上层调用透明。
+ * 集群主要是用来处理集群容错问题，在集群调用失败时，如何处理。针对不同的处理策略，则提供不同的实现。
+ * Dubbo默认的集群实现为failover，failover在集群失败时选择下一台机器调用
  */
 @SPI(FailoverCluster.NAME)
 public interface Cluster {

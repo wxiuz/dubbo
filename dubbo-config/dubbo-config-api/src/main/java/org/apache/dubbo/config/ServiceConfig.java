@@ -52,8 +52,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.*;
 import static org.apache.dubbo.config.Constants.*;
@@ -402,7 +402,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 map.put(REVISION_KEY, revision);
             }
 
-            // 生成当前待暴露服务的包装类
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 logger.warn("No method found in service interface " + interfaceClass.getName());
@@ -419,13 +418,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 map.put(TOKEN_KEY, token);
             }
         }
-        //init serviceMetadata attachments
         serviceMetadata.getAttachments().putAll(map);
 
-        // export service
-        // 服务IP
         String host = findConfigedHosts(protocolConfig, registryURLs, map);
-        // 服务端口
         Integer port = findConfigedPorts(protocolConfig, name, map);
 
         // 创建服务暴露的URL
@@ -442,11 +437,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         // don't export when none is configured
         if (!SCOPE_NONE.equalsIgnoreCase(scope)) {
             if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
-                // 暴露服务到本地，即用injvm协议进行协议暴露，
+                // 暴露服务到本地，即用injvm协议进行协议暴露
                 exportLocal(url);
             }
 
-            // 如果scope不为local则将服务暴露到远程
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 if (CollectionUtils.isNotEmpty(registryURLs)) {
                     // 将服务注册到多个注册中心上去
@@ -474,9 +468,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                             registryURL = registryURL.addParameter(PROXY_KEY, proxy);
                         }
 
-                        // 将需要暴露的服务URL作为注册URL的参数，并对服务暴露的URL进行URLEncode
                         registryURL = registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString());
 
+                        // 创建真实服务的代理对象
                         Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL);
 
                         // 用于包装Invoker与ServiceConfig

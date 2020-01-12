@@ -160,7 +160,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 }
             } else {
                 List<URL> urls = new ArrayList<>();
-                // 获取Consumer端需要监听的节点
+                // 获取Consumer端需要监听的节点:providers,configurators,routers
                 for (String path : toCategoriesPath(url)) {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                     if (listeners == null) {

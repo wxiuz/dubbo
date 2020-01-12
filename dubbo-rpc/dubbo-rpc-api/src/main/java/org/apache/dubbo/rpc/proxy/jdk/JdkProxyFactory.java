@@ -26,16 +26,33 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 /**
- * JdkRpcProxyFactory
+ * Jdk代理
  */
 public class JdkProxyFactory extends AbstractProxyFactory {
 
+    /**
+     * 用于Consumer端创建服务端接口的代理
+     *
+     * @param invoker
+     * @param interfaces
+     * @param <T>
+     * @return
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getProxy(Invoker<T> invoker, Class<?>[] interfaces) {
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), interfaces, new InvokerInvocationHandler(invoker));
     }
 
+    /**
+     * 用于服务端创建服务暴露的对象
+     *
+     * @param proxy 真实的服务实现
+     * @param type  服务接口类型
+     * @param url   URL 参数
+     * @param <T>
+     * @return
+     */
     @Override
     public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) {
         return new AbstractProxyInvoker<T>(proxy, type, url) {
@@ -43,7 +60,9 @@ public class JdkProxyFactory extends AbstractProxyFactory {
             protected Object doInvoke(T proxy, String methodName,
                                       Class<?>[] parameterTypes,
                                       Object[] arguments) throws Throwable {
+                // 服务调用，调用真实服务的方法并给出返回值
                 Method method = proxy.getClass().getMethod(methodName, parameterTypes);
+                // 通过反射调用真实服务方法
                 return method.invoke(proxy, arguments);
             }
         };

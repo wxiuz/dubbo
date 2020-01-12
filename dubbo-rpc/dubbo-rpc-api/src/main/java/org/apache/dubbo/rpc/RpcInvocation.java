@@ -33,16 +33,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
- * Rpc调用
+ * Rpc调用参数
  *
  * @serial Don't change the class name and properties.
  */
@@ -50,21 +45,42 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private static final long serialVersionUID = -4355285085441097045L;
 
+    /**
+     * 服务ServiceKey
+     */
     private String targetServiceUniqueName;
 
+    /**
+     * 调用的方法名
+     */
     private String methodName;
+
+    /**
+     * 调用的服务名，为接口的全限定名
+     */
     private String serviceName;
 
+    /**
+     * 方法入参类型
+     */
     private transient Class<?>[] parameterTypes;
+
     private String parameterTypesDesc;
+
     private String[] compatibleParamSignatures;
 
+    /**
+     * 方法入参
+     */
     private Object[] arguments;
 
     private Map<String, Object> attachments;
 
     private Map<Object, Object> attributes = new HashMap<Object, Object>();
 
+    /**
+     * 远程调用对象
+     */
     private transient Invoker<?> invoker;
 
     private transient Class<?> returnType;

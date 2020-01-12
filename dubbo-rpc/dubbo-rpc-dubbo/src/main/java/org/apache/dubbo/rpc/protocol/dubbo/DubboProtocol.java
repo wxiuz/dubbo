@@ -267,7 +267,7 @@ public class DubboProtocol extends AbstractProtocol {
     /**
      * 服务导出
      *
-     * @param invoker Service invoker
+     * @param invoker 代表真实服务对象，内部间接包含了真实的服务对象
      * @param <T>
      * @return
      * @throws RpcException

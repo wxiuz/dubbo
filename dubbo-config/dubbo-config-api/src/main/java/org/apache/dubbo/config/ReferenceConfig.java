@@ -107,6 +107,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         super(reference);
     }
 
+    /**
+     * Consumer端初始化，获取服务端代理对象
+     *
+     * @return
+     */
     public synchronized T get() {
         if (destroyed) {
             throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
@@ -229,6 +234,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 null,
                 serviceMetadata);
 
+        // 创建服务端代理对象
         ref = createProxy(map);
 
         serviceMetadata.setTarget(ref);
@@ -270,6 +276,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 // if protocols not injvm checkRegistry
                 if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())) {
                     checkRegistry();
+                    // 注册中心地址
                     List<URL> us = ConfigValidationUtils.loadRegistries(this, false);
                     if (CollectionUtils.isNotEmpty(us)) {
                         for (URL u : us) {
@@ -287,6 +294,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             }
 
             if (urls.size() == 1) {
+                // ProtocolFilterWrapper -->QosProtocolWrapper-->ProtocolListenerWrapper，返回一个ClusterInvoker
                 invoker = REF_PROTOCOL.refer(interfaceClass, urls.get(0));
             } else {
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
@@ -333,7 +341,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
             metadataService.publishServiceDefinition(consumerURL);
         }
-        // create service proxy
+        // 创建一个服务代理，内部包含了Invoker
         return (T) PROXY_FACTORY.getProxy(invoker);
     }
 

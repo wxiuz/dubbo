@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * 调用请求参数
+ * 请求调用参数
  *
  * @serial Don't change the class name and package name.
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)

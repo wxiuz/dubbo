@@ -51,14 +51,14 @@ public class ProtocolFilterWrapper implements Protocol {
      * 构建一个Filter链条
      * <p>
      * <p>
-     *
+     * <p>
      * Filter1------->Filter2------->Filter3------->......------->FilterN【调用原始Invoker】
-     *                                                               ^
-     *                                                               |
-     *                                                               |
-     *
+     * ^
+     * |
+     * |
+     * <p>
      * Invoker1------>Invoker2------>Invoker3------>.......------>InvokerN
-     *
+     * <p>
      * 最终返回Invoker1，调用链路为
      * Invoker1-->Filter1-->Invoker2-->Filter2-->Invoker3-->Filter3-->......-->InvokerN-->FilterN--->原始Invoker
      *
@@ -76,6 +76,7 @@ public class ProtocolFilterWrapper implements Protocol {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final Filter filter = filters.get(i);
                 final Invoker<T> next = last;
+                // 将Filter包装在Invoker中
                 last = new Invoker<T>() {
 
                     @Override
@@ -154,6 +155,14 @@ public class ProtocolFilterWrapper implements Protocol {
         return protocol.getDefaultPort();
     }
 
+    /**
+     * 服务端暴露服务
+     *
+     * @param invoker Service invoker
+     * @param <T>
+     * @return
+     * @throws RpcException
+     */
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         /**
@@ -168,6 +177,15 @@ public class ProtocolFilterWrapper implements Protocol {
         return protocol.export(buildInvokerChain(invoker, SERVICE_FILTER_KEY, CommonConstants.PROVIDER));
     }
 
+    /**
+     * 客户端应用服务
+     *
+     * @param type Service class
+     * @param url  URL address for the remote service
+     * @param <T>
+     * @return
+     * @throws RpcException
+     */
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         if (UrlUtils.isRegistry(url)) {

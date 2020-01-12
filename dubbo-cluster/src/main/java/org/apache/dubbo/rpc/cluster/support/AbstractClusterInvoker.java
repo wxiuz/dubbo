@@ -228,7 +228,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     /**
      * 服务调用入口
      *
-     * @param invocation
+     * @param invocation RpcInvocation
      * @return
      * @throws RpcException
      */

@@ -27,9 +27,8 @@ import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import java.util.List;
 
 /**
- * LoadBalance. (SPI, Singleton, ThreadSafe)
- * <p>
- * <a href="http://en.wikipedia.org/wiki/Load_balancing_(computing)">Load-Balancing</a>
+ * LoadBalance 负责从多个 Invoker 中选出具体的一个用于本次调用，
+ * 选的过程包含了负载均衡算法，调用失败后，需要重选
  *
  * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
  */
@@ -37,11 +36,11 @@ import java.util.List;
 public interface LoadBalance {
 
     /**
-     * select one invoker in list.
+     * 从给定的Invokers中选择一个具体的Invoker来调用
      *
-     * @param invokers   invokers.
-     * @param url        refer url
-     * @param invocation invocation.
+     * @param invokers   所有可以使用的Invoker.
+     * @param url        URL
+     * @param invocation 调用参数.
      * @return selected invoker.
      */
     @Adaptive("loadbalance")
