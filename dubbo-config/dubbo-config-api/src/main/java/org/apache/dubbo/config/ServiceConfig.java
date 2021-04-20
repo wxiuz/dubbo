@@ -288,7 +288,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 serviceMetadata
         );
 
-        // 获取注册中心地址，返回List说明支持多注册中心
+        // 获取注册中心地址，返回List说明支持多注册中心，多个注册中心之间用|或者;隔开
         // 地址格式为：registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?accepts=100&application=demo-provider&application.version=1.0.0&check=false&compiler=jdk&dubbo=2.0.2&owner=demo&pid=8540&qos.port=22222&register=true&registry=zookeeper&timestamp=1578572225516&version=1.1.0
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
@@ -420,7 +420,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
         serviceMetadata.getAttachments().putAll(map);
 
+        // 获取服务提供者的ip
         String host = findConfigedHosts(protocolConfig, registryURLs, map);
+        // 获取服务提供者的服务端口
         Integer port = findConfigedPorts(protocolConfig, name, map);
 
         // 创建服务暴露的URL

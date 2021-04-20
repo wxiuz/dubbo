@@ -66,40 +66,60 @@ public class ExtensionLoader<T> {
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
 
-    // SPI接口类型
+    /**
+     * SPI接口类型
+     */
     private final Class<?> type;
 
-    // static属性，所有的SPI接口的ExtensionLoader共享该属性，SPI接口与ExtensionLoader映射
+    /**
+     * static属性，所有的SPI接口的ExtensionLoader共享该属性，SPI接口与ExtensionLoader映射
+     */
     private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<>();
 
-    // static属性，所有的SPI接口的ExtensionLoader共享该属性，SPI接口SPI实现映射
+    /**
+     * static属性，所有的SPI接口的ExtensionLoader共享该属性，SPI接口SPI实现映射
+     */
     private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>();
 
-    // ExtensionLoader最终获取SPI依赖工厂
+    /**
+     * ExtensionLoader最终获取SPI依赖工厂
+     */
     private final ExtensionFactory objectFactory;
 
-    // 当前SPI实现的所有名称映射，一个SPI实现类可以有多个名称
+    /**
+     * 当前SPI实现的所有名称映射，一个SPI实现类可以有多个名称
+     */
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<>();
 
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
-    // SPI的所有默认激活的实现，即被@Activate标注的实现类
+    /**
+     * SPI的所有默认激活的实现，即被@Activate标注的实现类
+     */
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
 
-    // SPI的Adaptive实例
+    /**
+     * SPI的Adaptive实例
+     */
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
 
-    // SPI的Adaptive实现类，一个SPI只能有一个Adaptive实现类
+    /**
+     * SPI的Adaptive实现类，一个SPI只能有一个Adaptive实现类
+     */
     private volatile Class<?> cachedAdaptiveClass = null;
 
-    // SPI默认的实现，通过@SPI中的属性来标记
+    /**
+     * SPI默认的实现，通过@SPI中的属性来标记
+     */
     private String cachedDefaultName;
 
     private volatile Throwable createAdaptiveInstanceError;
 
-    // SPI的所有Wrapper实现类
+    /**
+     * SPI的所有Wrapper实现类
+     */
     private Set<Class<?>> cachedWrapperClasses;
 
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();
@@ -379,7 +399,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 根据SPI实现的名称来获取对应的实例
+     * 根据SPI实现的名称来获取对应的实例，内部自动完成了IOC与AOP
      */
     @SuppressWarnings("unchecked")
     public T getExtension(String name) {

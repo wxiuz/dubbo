@@ -30,30 +30,10 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
@@ -106,8 +86,14 @@ class URL implements Serializable {
 
     private final String path;
 
+    /**
+     * URL参数链列表
+     */
     private final Map<String, String> parameters;
 
+    /**
+     * 方法参数列表
+     */
     private final Map<String, Map<String, String>> methodParameters;
 
     // ==== cache ====
@@ -184,7 +170,7 @@ class URL implements Serializable {
                int port,
                String path,
                Map<String, String> parameters) {
-        this (protocol, username, password, host, port, path, parameters, toMethodParameters(parameters));
+        this(protocol, username, password, host, port, path, parameters, toMethodParameters(parameters));
     }
 
     public URL(String protocol,
@@ -776,7 +762,7 @@ class URL implements Serializable {
         Map<String, String> keyMap = methodParameters.get(method);
         String value = null;
         if (keyMap != null) {
-            value =  keyMap.get(key);
+            value = keyMap.get(key);
         }
         if (StringUtils.isEmpty(value)) {
             value = parameters.get(key);
@@ -1573,7 +1559,7 @@ class URL implements Serializable {
             return false;
         }
         URL other = (URL) obj;
-        if(!StringUtils.isEquals(host, other.host)) {
+        if (!StringUtils.isEquals(host, other.host)) {
             return false;
         }
         if (parameters == null) {
@@ -1583,19 +1569,19 @@ class URL implements Serializable {
         } else if (!parameters.equals(other.parameters)) {
             return false;
         }
-        if(!StringUtils.isEquals(password, other.password)) {
+        if (!StringUtils.isEquals(password, other.password)) {
             return false;
         }
-        if(!StringUtils.isEquals(path, other.path)) {
+        if (!StringUtils.isEquals(path, other.path)) {
             return false;
         }
         if (port != other.port) {
             return false;
         }
-        if(!StringUtils.isEquals(protocol, other.protocol)) {
+        if (!StringUtils.isEquals(protocol, other.protocol)) {
             return false;
         }
-        if(!StringUtils.isEquals(username, other.username)) {
+        if (!StringUtils.isEquals(username, other.username)) {
             return false;
         }
         return true;

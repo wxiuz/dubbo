@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Dubbo支持的服务暴露协议，默认协议为dubbo协议
+ * Dubbo支持的协议，该协议包括两个部分，一个是服务注册使用的协议，一个是服务暴露调用的协议，默认协议为dubbo协议
  */
 @SPI("dubbo")
 public interface Protocol {

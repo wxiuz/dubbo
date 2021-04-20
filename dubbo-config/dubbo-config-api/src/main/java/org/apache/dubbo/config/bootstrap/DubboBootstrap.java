@@ -117,8 +117,14 @@ public class DubboBootstrap extends GenericEventListener {
 
     private ReferenceConfigCache cache;
 
+    /**
+     * 是否异步导出
+     */
     private volatile boolean exportAsync;
 
+    /**
+     * 是否异步引用
+     */
     private volatile boolean referAsync;
 
     private AtomicBoolean initialized = new AtomicBoolean(false);

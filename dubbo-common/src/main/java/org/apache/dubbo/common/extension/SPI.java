@@ -48,6 +48,7 @@ import java.lang.annotation.*;
  * Fails to load Extension("mina"). When user configure to use mina, dubbo will complain the extension cannot be loaded,
  * instead of reporting which extract extension implementation fails and the extract reason.
  * </p>
+ * @author lenovo
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
