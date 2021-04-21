@@ -119,7 +119,7 @@ public class DubboProtocol extends AbstractProtocol {
             // 在调用线程中生成一个RpcContext
             RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
             // 服务调用
-            Result result =  invoker.invoke(inv);
+            Result result = invoker.invoke(inv);
             return result.thenApply(Function.identity());
         }
 
@@ -265,9 +265,9 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     /**
-     * 服务导出
+     * 服务导出，创建Dubbo服务并监听对应端口来接收客户端请求
      *
-     * @param invoker 代表真实服务对象，内部间接包含了真实的服务对象
+     * @param invoker 代表真实服务对象，内部间接包含了真实的服务对象，中间可能存在一系列的过滤器等
      * @param <T>
      * @return
      * @throws RpcException
@@ -279,8 +279,11 @@ public class DubboProtocol extends AbstractProtocol {
 
         // 为服务生成key，具体规则为：serviceGroup/serviceName[:serviceVersion]:port
         String key = serviceKey(url);
+        // 一个服务提供者对应一个DubboExporter
         DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
-        // 存储暴露的服务，Consumer调用时则从中取出对应的服务来调用
+        /**
+         * Dubbo服务器端用于存储暴露的服务，Consumer调用时Dubbo服务端则根据的请求从中取出对应的服务来调用
+         */
         exporterMap.put(key, exporter);
 
         //export an stub service for dispatching event

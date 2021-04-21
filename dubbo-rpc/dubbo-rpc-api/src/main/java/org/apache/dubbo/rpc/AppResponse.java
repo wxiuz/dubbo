@@ -32,7 +32,7 @@ import java.util.function.Function;
  *     <li>AsyncRpcResult is the object that is actually passed in the call chain</li>
  *     <li>AppResponse only simply represents the business result</li>
  * </ul>
- *
+ * <p>
  *  The relationship between them can be described as follow, an abstraction of the definition of AsyncRpcResult:
  *  <pre>
  *  {@code
@@ -49,6 +49,9 @@ public class AppResponse implements Result {
 
     private static final long serialVersionUID = -6925924956850004727L;
 
+    /**
+     * 服务返回结果
+     */
     private Object result;
 
     private Throwable exception;

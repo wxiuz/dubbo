@@ -87,8 +87,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
     /**
-     * A {@link ProxyFactory} implementation that will generate a exported service proxy,the JavassistProxyFactory is its
-     * default implementation
+     * 代理工厂类：用来创建代理类
      */
     private static final ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
@@ -267,6 +266,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             path = interfaceName;
         }
 
+        // 导出服务
         doExportUrls();
 
         // dispatch a ServiceConfigExportedEvent since 2.7.4
@@ -292,7 +292,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         // 地址格式为：registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?accepts=100&application=demo-provider&application.version=1.0.0&check=false&compiler=jdk&dubbo=2.0.2&owner=demo&pid=8540&qos.port=22222&register=true&registry=zookeeper&timestamp=1578572225516&version=1.1.0
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
-        // 一个服务可以通过多种协议暴露并注册到多个注册中心上
+        /**
+         * 一个服务可以通过多种协议暴露并注册到多个注册中心上
+         * 每一种协议就是需要启动一个Server服务监听指定端口
+         * 来接收请求
+         */
         for (ProtocolConfig protocolConfig : protocols) {
             String pathKey = URL.buildKey(getContextPath(protocolConfig)
                     .map(p -> p + "/" + path)
@@ -425,7 +429,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         // 获取服务提供者的服务端口
         Integer port = findConfigedPorts(protocolConfig, name, map);
 
-        // 创建服务暴露的URL
+        /**
+         * 根据暴露的协议创建服务暴露的URL，同一个服务协议不同，则该URL不同，同一个服务需要按照协议的维度来进行URL构建
+         */
         URL url = new URL(name, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), map);
 
         // You can customize Configurator to append extra parameters
@@ -472,14 +478,24 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
                         registryURL = registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString());
 
-                        // 创建真实服务的代理对象
+                        /**
+                         * 创建真实服务的代理对象Invoker，此处并没有使用jdk动态代理来生成代理对象，而是直接通过Invoker
+                         * 来包装真实对象，并充当代理对象
+                         *
+                         */
                         Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL);
 
-                        // 用于包装Invoker与ServiceConfig
+                        /**
+                         * 用于包装Invoker与ServiceConfig
+                         */
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
-                        // 服务提供端的registryURL中协议为registry，则该处获取协议名称为registry来进行服务暴露，
-                        // 即调用的是RegistryProtocol对象的export方法
+                        /**
+                         * 将真实服务的的代理Invoker暴露到对应的协议服务端上并将服务端信息注册到注册中心
+                         *
+                         * 实际上会调用到{@link org.apache.dubbo.registry.integration.RegistryProtocol#export(Invoker)}
+                         *
+                         */
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
                         exporters.add(exporter);
                     }

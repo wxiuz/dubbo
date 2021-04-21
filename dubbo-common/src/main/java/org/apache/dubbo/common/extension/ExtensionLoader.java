@@ -254,7 +254,8 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * Get activate extensions.
+     * 有些Extension属于集合类型的，此时返回的则不在是一个具体的实现，而是多个不同的实现，此时需要通过Activate
+     * 来过滤获取满足条件的Extension
      *
      * @param url    url
      * @param values extension point names

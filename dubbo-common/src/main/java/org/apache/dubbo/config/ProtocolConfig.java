@@ -25,7 +25,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KE
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 
 /**
- * ProtocolConfig
+ * 协议配置
  *
  * @export
  */
@@ -34,17 +34,17 @@ public class ProtocolConfig extends AbstractConfig {
     private static final long serialVersionUID = 6913423882496634749L;
 
     /**
-     * Protocol name
+     * 协议名称：如dubbo, http等
      */
     private String name;
 
     /**
-     * Service ip address (when there are multiple network cards available)
+     * 当机器有多网卡时配置某个指定的IP
      */
     private String host;
 
     /**
-     * Service port
+     * 当前协议导出的服务端口，即该协议服务端监听端口
      */
     private Integer port;
 
@@ -54,37 +54,37 @@ public class ProtocolConfig extends AbstractConfig {
     private String contextpath;
 
     /**
-     * Thread pool
+     * 当前协议服务端处理请求的线程池
      */
     private String threadpool;
 
     /**
-     * Thread pool core thread size
+     * 线程池核心线程数
      */
     private Integer corethreads;
 
     /**
-     * Thread pool size (fixed size)
+     * 线程池固定线程数
      */
     private Integer threads;
 
     /**
-     * IO thread pool size (fixed size)
+     * 处理IO事件的线程数
      */
     private Integer iothreads;
 
     /**
-     * Thread pool's queue length
+     * 线程池队列大小
      */
     private Integer queues;
 
     /**
-     * Max acceptable connections
+     * 服务端支持的最大连接数
      */
     private Integer accepts;
 
     /**
-     * Protocol codec
+     * 协议使用的编码器
      */
     private String codec;
 

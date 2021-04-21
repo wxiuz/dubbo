@@ -58,7 +58,7 @@ import static org.apache.dubbo.rpc.Constants.*;
 import static org.apache.dubbo.rpc.cluster.Constants.*;
 
 /**
- * RegistryProtocol
+ * 注册协议
  */
 public class RegistryProtocol implements Protocol {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
@@ -78,10 +78,28 @@ public class RegistryProtocol implements Protocol {
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //providerurl <--> exporter
     private final ConcurrentMap<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
-    // 根据Dubbo的IOC功能，会自动注入该Cluster
+
+    /**
+     * 客户端使用，Cluster是为了给Consumer端调用时，将多个Provider伪装成一个Provider，方便Consumer端调用，同时
+     * Cluster包含了对调用容错机制的处理，如自动重试，或快速失败等。
+     * <p>
+     * 根据Dubbo的IOC功能，会自动注入该Cluster，此时注入的是一个Cluster$Adaptive对象而不是某个具体的Cluster对象
+     * 当真实调用时，此时Cluster$Adaptive会根据URL传过来的参数选择具体的Cluster实现
+     */
     private Cluster cluster;
+    /**
+     * 服务端与客户端都有使用，用于创建服务端服务实例，监听端口接收客户端请求。
+     * <p>
+     * 根据Dubbo的IOC功能，会自动注入该Protocol，此时注入的是一个Protocol$Adaptive对象而不是某个具体的Protocol对象
+     * 当真实调用时，此时Protocol$Adaptive会根据URL传过来的参数选择具体的Protocol实现
+     */
     private Protocol protocol;
-    // 根据配置的注册中心协议获取对应的注册中心实现
+    /**
+     * 根据配置的注册中心协议获取对应的注册中心实现
+     * <p>
+     * 根据Dubbo的IOC功能，会自动注入该RegistryFactory，此时注入的是一个RegistryFactory$Adaptive对象而不是某个具体的RegistryFactory对象
+     * 当真实调用时，此时RegistryFactory$Adaptive会根据URL传过来的参数选择具体的RegistryFactory实现
+     */
     private RegistryFactory registryFactory;
     private ProxyFactory proxyFactory;
 
@@ -174,15 +192,24 @@ public class RegistryProtocol implements Protocol {
         overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
-        // 导出服务
+        /**
+         * 根据实际的服务导出协议进行服务暴露
+         */
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
-        // 由注册中心URL获取注册中心实现zookeeper, nacos, redis，consul等
+        /**
+         * 根据注册中心URL获取注册中心实现zookeeper, nacos, redis，consul等，通过注册中心URL的协议来获取对应的实现
+         */
         final Registry registry = getRegistry(originInvoker);
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
+        /**
+         * 支持暴露的服务不注册到远程注册中心，通过register参数来配置，方便本地调试，避免影响其他环境的服务
+         */
         if (register) {
-            // 将dubbo服务地址注册到注册中心服务端
+            /**
+             * 将已暴露成功的服务地址注册到注册中心服务端
+             */
             register(registryUrl, registeredProviderUrl);
         }
 
@@ -202,13 +229,31 @@ public class RegistryProtocol implements Protocol {
         return serviceConfigurationListener.overrideUrl(providerUrl);
     }
 
+    /**
+     * 服务暴露：启动服务监听端口，并接收来自客户端的请求
+     *
+     * @param originInvoker
+     * @param providerUrl
+     * @param <T>
+     * @return
+     */
     @SuppressWarnings("unchecked")
     private <T> ExporterChangeableWrapper<T> doLocalExport(final Invoker<T> originInvoker, URL providerUrl) {
         String key = getCacheKey(originInvoker);
 
         return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(key, s -> {
             Invoker<?> invokerDelegate = new InvokerDelegate<>(originInvoker, providerUrl);
-            // 通过真实协议进行服务暴露，例如：dubbo，redis，Grpc等
+            /**
+             * 给真实的Invoker外包装一系列的Filter，以及添加额外的事件监听，最后暴露出来的是一个经过了Filter包装过的Filter，即
+             * Invoker1-->Filter1-->Invoker2-->Filter2-->Invoker3-->Filter3-->......-->InvokerN-->FilterN--->原始Invoker
+             *
+             * {@link org.apache.dubbo.rpc.protocol.ProtocolFilterWrapper}
+             * {@link org.apache.dubbo.rpc.protocol.ProtocolListenerWrapper}
+             *
+             * 真实协议进行服务暴露，例如：dubbo，redis，Grpc等
+             * {@link org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol}
+             * {@link org.apache.dubbo.rpc.protocol.http.HttpProtocol}
+             */
             return new ExporterChangeableWrapper<>((Exporter<T>) protocol.export(invokerDelegate), originInvoker);
         });
     }
@@ -281,12 +326,19 @@ public class RegistryProtocol implements Protocol {
         return registryFactory.getRegistry(registryUrl);
     }
 
+    /**
+     * 获取注册中心URL
+     *
+     * @param originInvoker
+     * @return
+     */
     protected URL getRegistryUrl(Invoker<?> originInvoker) {
         URL registryUrl = originInvoker.getUrl();
         // 服务注册
         if (REGISTRY_PROTOCOL.equals(registryUrl.getProtocol())) {
             // 从URL获取注册协议，zookeeper,nacos,dubbo,redis等
             String protocol = registryUrl.getParameter(REGISTRY_KEY, DEFAULT_REGISTRY);
+            // 设置注册的协议
             registryUrl = registryUrl.setProtocol(protocol).removeParameter(REGISTRY_KEY);
         }
         return registryUrl;
@@ -337,7 +389,7 @@ public class RegistryProtocol implements Protocol {
     }
 
     /**
-     * Get the address of the providerUrl through the url of the invoker
+     * 获取服务暴露的URL，包括服务暴露的协议，服务名称，参数等
      *
      * @param originInvoker
      * @return

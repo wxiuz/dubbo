@@ -833,6 +833,12 @@ public class DubboBootstrap extends GenericEventListener {
         metadataServiceExporter.unexport();
     }
 
+    /**
+     * 服务导出主要处理三个问题：
+     * （1）如果没有启动服务器，则启动服务器监听对应端口
+     * （2）将当前服务注册到已启动的服务器中，以便请求过来后知道调用哪个服务
+     * （3）将当前导出的服务注册到注册中心，以便给客户端使用
+     */
     private void exportServices() {
         // 从配置管理器中获取所有注册的Service,并进行一个个导出
         configManager.getServices().forEach(sc -> {

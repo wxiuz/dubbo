@@ -21,11 +21,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -54,8 +50,14 @@ public class AsyncRpcResult implements Result {
     private RpcContext storedServerContext;
     private Executor executor;
 
+    /**
+     * 服务调用采纳数
+     */
     private Invocation invocation;
 
+    /**
+     * 服务调用结果
+     */
     private CompletableFuture<AppResponse> responseFuture;
 
     public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
@@ -78,7 +80,7 @@ public class AsyncRpcResult implements Result {
     /**
      * CompletableFuture can only be completed once, so try to update the result of one completed CompletableFuture will
      * has no effect. To avoid this problem, we check the complete status of this future before update it's value.
-     *
+     * <p>
      * But notice that trying to give an uncompleted CompletableFuture a new specified value may face a race condition,
      * because the background thread watching the real result will also change the status of this CompletableFuture.
      * The result is you may lose the value you expected to set.
@@ -194,7 +196,7 @@ public class AsyncRpcResult implements Result {
     }
 
     @Override
-    public <U> CompletableFuture<U> thenApply(Function<Result,? extends U> fn) {
+    public <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn) {
         return this.responseFuture.thenApply(fn);
     }
 

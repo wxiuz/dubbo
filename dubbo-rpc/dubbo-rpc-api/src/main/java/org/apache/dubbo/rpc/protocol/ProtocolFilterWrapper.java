@@ -60,7 +60,7 @@ public class ProtocolFilterWrapper implements Protocol {
      * Invoker1------>Invoker2------>Invoker3------>.......------>InvokerN
      * <p>
      * 最终返回Invoker1，调用链路为
-     * Invoker1-->Filter1-->Invoker2-->Filter2-->Invoker3-->Filter3-->......-->InvokerN-->FilterN--->原始Invoker
+     * Invoker1-->Filter1-->Invoker2-->Filter2-->Invoker3-->Filter3-->......-->InvokerN-->FilterN--->原始Invoker【包含真实服务对象的Invoker】
      *
      * @param invoker
      * @param key
@@ -75,6 +75,8 @@ public class ProtocolFilterWrapper implements Protocol {
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final Filter filter = filters.get(i);
+                last = new FilterWrapperInvoker<>(invoker, last, filter);
+               /*
                 final Invoker<T> next = last;
                 // 将Filter包装在Invoker中
                 last = new Invoker<T>() {
@@ -143,7 +145,7 @@ public class ProtocolFilterWrapper implements Protocol {
                     public String toString() {
                         return invoker.toString();
                     }
-                };
+                };*/
             }
         }
 
@@ -166,13 +168,14 @@ public class ProtocolFilterWrapper implements Protocol {
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         /**
-         * 如果是服务注册
+         * 服务注册直接过，不需要包装Filter
          */
         if (UrlUtils.isRegistry(invoker.getUrl())) {
             return protocol.export(invoker);
         }
         /**
-         * 如果是服务暴露，则需要构建调用链
+         * 如果是真实服务暴露，则需要构建调用链，最后传给protocol的则是经过Filter包装过的Invoker对象，即
+         * Invoker1-->Filter1-->Invoker2-->Filter2-->Invoker3-->Filter3-->......-->InvokerN-->FilterN--->原始Invoker【包含真实服务对象的Invoker】
          */
         return protocol.export(buildInvokerChain(invoker, SERVICE_FILTER_KEY, CommonConstants.PROVIDER));
     }

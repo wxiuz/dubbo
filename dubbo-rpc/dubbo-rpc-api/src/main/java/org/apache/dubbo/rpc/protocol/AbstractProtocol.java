@@ -38,7 +38,7 @@ public abstract class AbstractProtocol implements Protocol {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * 服务提供者信息
+     * Dubbo服务端所有服务提供者信息，每导出一个服务则添加一个，代表服务端支持的服务功能
      */
     protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
 
