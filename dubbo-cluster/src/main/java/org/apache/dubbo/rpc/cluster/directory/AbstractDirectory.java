@@ -49,6 +49,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     private volatile URL consumerUrl;
 
+    /**
+     * 路由规则链
+     */
     protected RouterChain<T> routerChain;
 
     public AbstractDirectory(URL url) {

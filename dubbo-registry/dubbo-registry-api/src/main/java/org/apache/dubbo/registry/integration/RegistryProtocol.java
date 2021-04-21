@@ -447,6 +447,16 @@ public class RegistryProtocol implements Protocol {
         return ExtensionLoader.getExtensionLoader(Cluster.class).getExtension("mergeable");
     }
 
+    /**
+     * 创建一个ClusterInvoker
+     *
+     * @param cluster
+     * @param registry
+     * @param type
+     * @param url
+     * @param <T>
+     * @return
+     */
     private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
         // 代表多个可用的Invoker，可以看做List<Invoker>，但是List中Invoker可能因为注册中心的推送而发生改变
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);

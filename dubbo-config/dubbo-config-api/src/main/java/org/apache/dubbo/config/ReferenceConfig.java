@@ -234,7 +234,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 null,
                 serviceMetadata);
 
-        // 创建服务端代理对象
+        /**
+         * 创建客户端调用服务端的代理对象Invoker，本质上是通过cluster创建一个ClusterInvoker
+         * 该Invoker包含了集群调用的容错处理机制，以及负载均衡策略以及路由规则
+         * {@link org.apache.dubbo.rpc.cluster.Cluster}
+         */
         ref = createProxy(map);
 
         serviceMetadata.setTarget(ref);

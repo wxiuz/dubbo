@@ -26,6 +26,9 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.DemoService;
 
+/**
+ * @author lenovo
+ */
 public class Application {
     public static void main(String[] args) throws Exception {
         // 协议配置
@@ -51,6 +54,7 @@ public class Application {
 
         // 注册中心配置，代表当前服务需要将服务信息注册到的地址
         RegistryConfig registry = new RegistryConfig("zookeeper://127.0.0.1:2181?backup=127.0.0.1:2181,127.0.0.1:2181");
+        registry.setCheck(true);
 
         // dubbo服务端，用于监听客户端的请求
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();

@@ -28,7 +28,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Router chain
+ * Dubbo支持配置相关的路由规则，路由规则会根据实际的配置从所有可用的Invoker里面选择满足条件
+ * 的所有Invoker然后返回
  */
 public class RouterChain<T> {
 
@@ -88,7 +89,6 @@ public class RouterChain<T> {
     }
 
     /**
-     *
      * @param url
      * @param invocation
      * @return
