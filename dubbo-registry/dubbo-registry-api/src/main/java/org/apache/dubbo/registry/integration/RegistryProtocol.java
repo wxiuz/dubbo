@@ -472,7 +472,11 @@ public class RegistryProtocol implements Protocol {
         }
         // Router负责从多个Invoker中选择出一个Invoker来调用
         directory.buildRouterChain(subscribeUrl);
-        // 订阅节点providers,configurators,routers，当节点发生变更时自动通知客户端
+        /**
+         * 订阅节点providers,configurators,routers，当节点发生变更时自动通知客户端
+         * providers: 服务提供者节点
+         * routers: 路由规则节点【条件路由用的比较多】
+         */
         directory.subscribe(subscribeUrl.addParameter(CATEGORY_KEY,
                 PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY));
 

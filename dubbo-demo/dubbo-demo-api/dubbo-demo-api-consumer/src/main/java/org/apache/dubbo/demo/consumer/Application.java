@@ -23,7 +23,6 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
-import org.apache.dubbo.demo.DemoService;
 
 /**
  * @author lenovo

@@ -58,6 +58,8 @@ public class ExtensionLoader<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(ExtensionLoader.class);
 
+    private static final String PRINT_ADAPTIVE_SOURCE = "adaptive_source";
+
     private static final String SERVICES_DIRECTORY = "META-INF/services/";
 
     private static final String DUBBO_DIRECTORY = "META-INF/dubbo/";
@@ -1065,16 +1067,23 @@ public class ExtensionLoader<T> {
     private Class<?> createAdaptiveExtensionClass() {
         // 如果当前的type没有Adaptive实现类，则判断当前type是否有@Adaptive的方法，如果有,则自动生成Adaptive实现类
         String code = new AdaptiveClassCodeGenerator(type, cachedDefaultName).generate();
-        System.out.println();
-        System.out.println();
-        System.out.println(">>>>>>>>>>>>>>>" + type.getCanonicalName() + " adaptive code begin <<<<<<<<<<<<<<");
-        System.out.println(code);
-        System.out.println(">>>>>>>>>>>>>>>" + type.getCanonicalName() + " adaptive code end <<<<<<<<<<<<<<");
+        if (printAdaptiveSource()) {
+            System.out.println("\n\n\n>>>>>>>>>>>>>>>" + type.getCanonicalName() + " adaptive code begin <<<<<<<<<<<<<<");
+            System.out.println(code);
+            System.out.println(">>>>>>>>>>>>>>>" + type.getCanonicalName() + " adaptive code end <<<<<<<<<<<<<<\n\n\n");
+        }
         ClassLoader classLoader = findClassLoader();
         // java源码编译器
         org.apache.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
         // 编译自动生成的Adaptive代码
         return compiler.compile(code, classLoader);
+    }
+
+    private boolean printAdaptiveSource() {
+        Map<String, String> environment = System.getenv();
+        Properties properties = System.getProperties();
+        return (environment.containsKey(PRINT_ADAPTIVE_SOURCE) && "true".equalsIgnoreCase(environment.get(PRINT_ADAPTIVE_SOURCE))) ||
+                (properties.contains(PRINT_ADAPTIVE_SOURCE) && "true".equalsIgnoreCase(properties.getProperty(PRINT_ADAPTIVE_SOURCE)));
     }
 
     @Override

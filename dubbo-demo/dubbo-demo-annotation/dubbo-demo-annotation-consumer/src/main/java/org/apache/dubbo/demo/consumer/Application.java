@@ -19,7 +19,6 @@
 package org.apache.dubbo.demo.consumer;
 
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
-import org.apache.dubbo.demo.DemoService;
 import org.apache.dubbo.demo.consumer.comp.DemoServiceComponent;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

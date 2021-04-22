@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.demo.consumer;
 
-import org.apache.dubbo.demo.DemoService;
 import org.apache.dubbo.demo.GreetingService;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
