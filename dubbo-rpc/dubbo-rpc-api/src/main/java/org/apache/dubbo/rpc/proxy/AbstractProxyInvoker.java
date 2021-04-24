@@ -88,7 +88,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     }
 
     /**
-     * 服务调用
+     * 服务调用，真实服务代理后的调用返回的是包含CompletableFuture的AsyncRpcResult
      *
      * @param invocation 内部包含了真实服务调用需要的参数
      * @return
@@ -99,6 +99,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         try {
             // 真实服务方法调用
             Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
+            // 将真实服务方法调用的结果包装成一个CompletableFuture
             CompletableFuture<Object> future = wrapWithFuture(value, invocation);
             CompletableFuture<AppResponse> appResponseFuture = future.handle((obj, t) -> {
                 AppResponse result = new AppResponse();

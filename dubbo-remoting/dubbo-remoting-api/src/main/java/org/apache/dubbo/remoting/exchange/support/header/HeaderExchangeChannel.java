@@ -120,6 +120,15 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         return request(request, channel.getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), executor);
     }
 
+    /**
+     * 服务调用，所有服务都转为异步调用
+     *
+     * @param request
+     * @param timeout
+     * @param executor
+     * @return
+     * @throws RemotingException
+     */
     @Override
     public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
         if (closed) {
@@ -130,8 +139,14 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         req.setVersion(Version.getProtocolVersion());
         req.setTwoWay(true);
         req.setData(request);
+        /**
+         * 构建当前请求的异步返回结果跟踪器
+         */
         DefaultFuture future = DefaultFuture.newFuture(channel, req, timeout, executor);
         try {
+            /**
+             * 发送请求
+             */
             channel.send(req);
         } catch (RemotingException e) {
             future.cancel();

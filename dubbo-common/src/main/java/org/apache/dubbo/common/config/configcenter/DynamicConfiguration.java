@@ -158,7 +158,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     /**
      * Get the config keys by the specified group
      *
-     * @param group the specified group
+     * @param group   the specified group
      * @param rootKey the
      * @return the read-only non-null sorted {@link Set set} of config keys
      * @throws UnsupportedOperationException If the under layer does not support
@@ -192,7 +192,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     }
 
     /**
-     * Get the instance of {@link DynamicConfiguration} by the specified connection {@link URL}
+     * 从配置中心加载配置信息，根据配置协议选择不同的配置中心
      *
      * @param connectionURL
      * @return non-null

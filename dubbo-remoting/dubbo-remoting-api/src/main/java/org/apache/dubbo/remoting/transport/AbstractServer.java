@@ -34,16 +34,23 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.remoting.Constants.*;
 
 /**
- * AbstractServer
+ * Dubbo Server，定义公共的方法，具体底层通信的实现可以有所不同
+ *
+ * @author
  */
 public abstract class AbstractServer extends AbstractEndpoint implements RemotingServer {
 
     protected static final String SERVER_THREAD_POOL_NAME = "DubboServerHandler";
     private static final Logger logger = LoggerFactory.getLogger(AbstractServer.class);
+    /**
+     * 服务端执行业务处理的请求
+     */
     ExecutorService executor;
     private InetSocketAddress localAddress;
     private InetSocketAddress bindAddress;
-    // netty服务连接数控制
+    /**
+     * 服务端支持的最大连接数
+     */
     private int accepts;
     private int idleTimeout;
 

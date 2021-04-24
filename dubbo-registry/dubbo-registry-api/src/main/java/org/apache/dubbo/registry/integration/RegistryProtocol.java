@@ -247,12 +247,13 @@ public class RegistryProtocol implements Protocol {
              * 给真实的Invoker外包装一系列的Filter，以及添加额外的事件监听，最后暴露出来的是一个经过了Filter包装过的Filter，即
              * Invoker1-->Filter1-->Invoker2-->Filter2-->Invoker3-->Filter3-->......-->InvokerN-->FilterN--->原始Invoker
              *
-             * {@link org.apache.dubbo.rpc.protocol.ProtocolFilterWrapper}
-             * {@link org.apache.dubbo.rpc.protocol.ProtocolListenerWrapper}
+             * {@link org.apache.dubbo.rpc.Protocol$Adaptive#export(Invoker)}                 =>
+             * {@link org.apache.dubbo.rpc.protocol.ProtocolFilterWrapper#export(Invoker)}    =>
+             * {@link org.apache.dubbo.rpc.protocol.ProtocolListenerWrapper#export(Invoker)}  =>
              *
              * 真实协议进行服务暴露，例如：dubbo，redis，Grpc等
-             * {@link org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol}
-             * {@link org.apache.dubbo.rpc.protocol.http.HttpProtocol}
+             * {@link org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol#export(Invoker)}
+             * {@link org.apache.dubbo.rpc.protocol.http.HttpProtocol#export(Invoker)}
              */
             return new ExporterChangeableWrapper<>((Exporter<T>) protocol.export(invokerDelegate), originInvoker);
         });
@@ -458,7 +459,9 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
-        // 代表多个可用的Invoker，可以看做List<Invoker>，但是List中Invoker可能因为注册中心的推送而发生改变
+        /**
+         * 代表多个可用的Invoker，可以看做List<Invoker>，但是List中Invoker可能因为注册中心的推送而发生改变
+         */
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
@@ -470,7 +473,9 @@ public class RegistryProtocol implements Protocol {
             // 将消费者端信息注册到注册中心
             registry.register(directory.getRegisteredConsumerUrl());
         }
-        // Router负责从多个Invoker中选择出一个Invoker来调用
+        /**
+         * Router负责从多个Invoker中选择所有能够可用的Invoker列表，所以dubbo可以通过Router机制来进行服务治理
+         */
         directory.buildRouterChain(subscribeUrl);
         /**
          * 订阅节点providers,configurators,routers，当节点发生变更时自动通知客户端
@@ -480,7 +485,9 @@ public class RegistryProtocol implements Protocol {
         directory.subscribe(subscribeUrl.addParameter(CATEGORY_KEY,
                 PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY));
 
-        // 根据directory创建一个对上层调用透明的Invoker，返回的是一个ClusterInvoker
+        /**
+         * 根据directory创建一个对上层调用透明的Invoker，返回的是一个ClusterInvoker
+         */
         Invoker invoker = cluster.join(directory);
         return invoker;
     }

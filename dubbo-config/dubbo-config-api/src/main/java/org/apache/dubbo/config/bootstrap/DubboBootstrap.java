@@ -478,6 +478,9 @@ public class DubboBootstrap extends GenericEventListener {
 
         ApplicationModel.iniFrameworkExts();
 
+        /**
+         * 从配置中心加载配置信息
+         */
         startConfigCenter();
 
         useRegistryAsConfigCenterIfNecessary();
@@ -524,6 +527,9 @@ public class DubboBootstrap extends GenericEventListener {
         ConfigValidationUtils.validateSslConfig(getSsl());
     }
 
+    /**
+     * 从配置中心加载配置信息
+     */
     private void startConfigCenter() {
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
 
@@ -532,6 +538,7 @@ public class DubboBootstrap extends GenericEventListener {
             for (ConfigCenterConfig configCenter : configCenters) {
                 configCenter.refresh();
                 ConfigValidationUtils.validateConfigCenterConfig(configCenter);
+                // 连接配置中心，从配置中心获取配置信息包装成DynamicConfiguration
                 compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
             }
             environment.setDynamicConfiguration(compositeDynamicConfiguration);
@@ -685,7 +692,7 @@ public class DubboBootstrap extends GenericEventListener {
                 registerServiceInstance();
             }
 
-            // 2、引用服务【consumer】
+            // 2. 引用服务【consumer】
             referServices();
 
             if (logger.isInfoEnabled()) {
@@ -795,13 +802,13 @@ public class DubboBootstrap extends GenericEventListener {
             String appConfigContent = null;
             if (isNotEmpty(appGroup)) {
                 appConfigContent = dynamicConfiguration.getProperties
-                        (isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
-                                appGroup
-                        );
+                        (isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(), appGroup);
             }
             try {
                 environment.setConfigCenterFirst(configCenter.isHighestPriority());
+                // 解析dubbo group的配置内容
                 environment.updateExternalConfigurationMap(parseProperties(configContent));
+                // 解析app group的配置内容
                 environment.updateAppExternalConfigurationMap(parseProperties(appConfigContent));
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to parse configurations from Config Center.", e);

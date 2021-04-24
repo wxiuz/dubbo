@@ -23,14 +23,18 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
+import org.apache.dubbo.demo.HelloService;
 
 /**
  * @author lenovo
  */
-public class Application {
-    public static void main(String[] args) {
-        ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
-        reference.setInterface(DemoService.class);
+public class ConsumerApplication {
+
+    public static void main(String[] args) throws Exception {
+        ReferenceConfig<HelloService> reference = new ReferenceConfig<>();
+        reference.setInterface(HelloService.class);
+        reference.setGroup("demo");
+        reference.setVersion("V1.0.0");
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(new ApplicationConfig("dubbo-demo-api-consumer"))
@@ -38,7 +42,9 @@ public class Application {
                 .reference(reference)
                 .start();
 
-        String message = ReferenceConfigCache.getCache().get(reference).sayHello("dubbo");
+        String message = ReferenceConfigCache.getCache().get(reference).hello("dubbo");
         System.out.println(message);
+        System.in.read();
     }
+
 }

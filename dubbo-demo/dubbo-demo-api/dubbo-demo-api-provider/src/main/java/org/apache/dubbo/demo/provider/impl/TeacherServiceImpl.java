@@ -1,4 +1,4 @@
-package org.apache.dubbo.demo.provider;
+package org.apache.dubbo.demo.provider.impl;
 
 import org.apache.dubbo.demo.UserService;
 import org.apache.dubbo.demo.model.User;

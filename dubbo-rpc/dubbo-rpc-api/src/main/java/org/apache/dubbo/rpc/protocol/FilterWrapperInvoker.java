@@ -3,6 +3,9 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.*;
 
+/**
+ * @author lenovo
+ */
 public class FilterWrapperInvoker<T> implements Invoker<T> {
 
     private Invoker<T> originInvoker;
@@ -47,6 +50,9 @@ public class FilterWrapperInvoker<T> implements Invoker<T> {
     public Result invoke(Invocation invocation) throws RpcException {
         Result asyncResult;
         try {
+            /**
+             * 返回的是包含{@link java.util.concurrent.CompletableFuture<AppResponse >}的 {@link org.apache.dubbo.rpc.AsyncRpcResult}。
+             */
             asyncResult = filter.invoke(nextInvoker, invocation);
         } catch (Exception e) {
             // Deprecated!

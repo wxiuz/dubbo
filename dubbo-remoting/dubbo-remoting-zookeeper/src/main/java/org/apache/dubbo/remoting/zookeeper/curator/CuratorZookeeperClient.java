@@ -203,10 +203,16 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         return new CuratorZookeeperClient.CuratorWatcherImpl(client, listener, path);
     }
 
+    /**
+     * 为指定节点的所有子节点添加监听，并返回所有子节点
+     *
+     * @param path
+     * @param listener
+     * @return
+     */
     @Override
     public List<String> addTargetChildListener(String path, CuratorWatcherImpl listener) {
         try {
-            // 为指定节点的所有子节点添加监听，并返回所有子节点
             return client.getChildren().usingWatcher(listener).forPath(path);
         } catch (NoNodeException e) {
             return null;
@@ -257,6 +263,9 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         listener.unwatch();
     }
 
+    /**
+     * Zookeeper节点事件监听器
+     */
     static class CuratorWatcherImpl implements CuratorWatcher, TreeCacheListener {
 
         private CuratorFramework client;
@@ -281,6 +290,12 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             this.childListener = null;
         }
 
+        /**
+         * 监听的节点发生变更
+         *
+         * @param event
+         * @throws Exception
+         */
         @Override
         public void process(WatchedEvent event) throws Exception {
             // if client connect or disconnect to server, zookeeper will queue
@@ -290,6 +305,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             }
 
             if (childListener != null) {
+                // 发生事件变更时会重新获取当前变更节点的所有子节点
                 childListener.childChanged(path, client.getChildren().usingWatcher(this).forPath(path));
             }
         }

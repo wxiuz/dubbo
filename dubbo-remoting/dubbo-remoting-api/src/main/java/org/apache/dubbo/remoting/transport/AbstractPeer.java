@@ -27,7 +27,12 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
     /**
      * 服务器端事件处理器：
      * <p>
-     * MultiMessageHandler--->HeartbeatHandler--->【DispatcherChannelHandler：扩展点】--->DecodeHandler--->HeaderExchangeHandler--->ExchangeHandlerAdapter
+     * {@link org.apache.dubbo.remoting.transport.MultiMessageHandler} =>
+     * {@link org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandler} =>
+     * {@link org.apache.dubbo.remoting.transport.dispatcher.all.AllChannelHandler} 【扩展点】 =>
+     * {@link org.apache.dubbo.remoting.transport.DecodeHandler} =>
+     * {@link org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler} =>
+     * {@link org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter} =>
      */
     private final ChannelHandler handler;
 
@@ -124,12 +129,17 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         if (closed) {
             return;
         }
-        // MultiMessageHandler
+        /**
+         * {@link org.apache.dubbo.remoting.transport.MultiMessageHandler#connected(Channel)}
+         */
         handler.connected(ch);
     }
 
     @Override
     public void disconnected(Channel ch) throws RemotingException {
+        /**
+         * {@link org.apache.dubbo.remoting.transport.MultiMessageHandler#disconnected(Channel)}
+         */
         handler.disconnected(ch);
     }
 
@@ -138,6 +148,9 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         if (closed) {
             return;
         }
+        /**
+         * {@link org.apache.dubbo.remoting.transport.MultiMessageHandler#sent(Channel, Object)}
+         */
         handler.sent(ch, msg);
     }
 
@@ -146,11 +159,17 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         if (closed) {
             return;
         }
+        /**
+         * {@link org.apache.dubbo.remoting.transport.MultiMessageHandler#received(Channel, Object)}
+         */
         handler.received(ch, msg);
     }
 
     @Override
     public void caught(Channel ch, Throwable ex) throws RemotingException {
+        /**
+         * {@link org.apache.dubbo.remoting.transport.MultiMessageHandler#caught(Channel, Throwable)}
+         */
         handler.caught(ch, ex);
     }
 }

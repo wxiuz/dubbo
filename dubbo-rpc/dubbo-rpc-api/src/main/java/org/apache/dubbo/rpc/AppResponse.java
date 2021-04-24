@@ -50,7 +50,7 @@ public class AppResponse implements Result {
     private static final long serialVersionUID = -6925924956850004727L;
 
     /**
-     * 服务返回结果
+     * 真实方法调用结果
      */
     private Object result;
 

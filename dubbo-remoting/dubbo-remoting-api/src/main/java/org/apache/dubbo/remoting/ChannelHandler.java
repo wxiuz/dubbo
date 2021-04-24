@@ -59,7 +59,7 @@ public interface ChannelHandler {
     void received(Channel channel, Object message) throws RemotingException;
 
     /**
-     * on exception caught.
+     * 捕获异常事件
      *
      * @param channel   channel.
      * @param exception exception.

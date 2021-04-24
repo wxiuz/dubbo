@@ -223,18 +223,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     /**
-     * Convert the invokerURL list to the Invoker Map. The rules of the conversion are as follows:
-     * <ol>
-     * <li> If URL has been converted to invoker, it is no longer re-referenced and obtained directly from the cache,
-     * and notice that any parameter changes in the URL will be re-referenced.</li>
-     * <li>If the incoming invoker list is not empty, it means that it is the latest invoker list.</li>
-     * <li>If the list of incoming invokerUrl is empty, It means that the rule is only a override rule or a route
-     * rule, which needs to be re-contrasted to decide whether to re-reference.</li>
-     * </ol>
+     * 根据服务提供这的地址将每个地址的提供者构建为一个Invoker【集群部署的时候，同一个服务可能有多个提供者】
      *
-     * @param invokerUrls this parameter can't be null
+     * @param invokerUrls
      */
-    // TODO: 2017/8/31 FIXME The thread pool should be used to refresh the address, otherwise the task may be accumulated.
     private void refreshInvoker(List<URL> invokerUrls) {
         Assert.notNull(invokerUrls, "invokerUrls should not be null");
 
@@ -349,7 +341,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     /**
-     * Turn urls into invokers, and if url has been refer, will not re-reference.
+     * 将服务提供者的URL转换为Invoker对象
      *
      * @param urls
      * @return invokers

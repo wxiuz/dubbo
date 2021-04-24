@@ -118,8 +118,18 @@ public class DubboProtocol extends AbstractProtocol {
             }
             // 在调用线程中生成一个RpcContext
             RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
-            // 服务调用
+            /**
+             *  服务调用
+             *
+             *  {@link org.apache.dubbo.rpc.proxy.jdk.JdkProxyFactory#getInvoker(Object, Class, URL)}
+             *  {@link org.apache.dubbo.rpc.proxy.AbstractProxyInvoker#invoke(Invocation)}
+             */
             Result result = invoker.invoke(inv);
+            /**
+             * {@link org.apache.dubbo.rpc.AsyncRpcResult#thenApply(Function)}
+             * 返回对象为
+             * {@link java.util.concurrent.CompletableFuture<AppResponse>}
+             */
             return result.thenApply(Function.identity());
         }
 
@@ -410,6 +420,15 @@ public class DubboProtocol extends AbstractProtocol {
         }
     }
 
+    /**
+     * 构建一个DubboInvoker用于给Consumer调用
+     *
+     * @param serviceType
+     * @param url
+     * @param <T>
+     * @return
+     * @throws RpcException
+     */
     @Override
     public <T> Invoker<T> protocolBindingRefer(Class<T> serviceType, URL url) throws RpcException {
         optimizeSerialization(url);

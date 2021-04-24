@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.proxy;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 
@@ -64,6 +65,9 @@ public class InvokerInvocationHandler implements InvocationHandler {
         RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args);
         rpcInvocation.setTargetServiceUniqueName(invoker.getUrl().getServiceKey());
 
+        /**
+         * {@link org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker#invoke(Invocation)}
+         */
         return invoker.invoke(rpcInvocation).recreate();
     }
 }

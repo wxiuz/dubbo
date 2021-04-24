@@ -48,35 +48,47 @@ import static org.apache.dubbo.remoting.Constants.SSL_ENABLED_KEY;
 
 /**
  * NettyServer.
+ *
+ * @author
  */
 public class NettyServer extends AbstractServer implements RemotingServer {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
     /**
-     * the cache for alive worker channel.
+     * 一个channel代表一个客户端的连接，记录了所有客户端的连接
      * <ip:port, dubbo channel>
      */
     private Map<String, Channel> channels;
+
     /**
-     * netty server bootstrap.
+     * 原生的Netty server bootstrap.
      */
     private ServerBootstrap bootstrap;
+
     /**
-     * the boss channel that receive connections and dispatch these to worker channel.
+     * Netty的BossReactor对应的原生Netty Channel，接收请求并将连接转发到Worker线程
      */
     private io.netty.channel.Channel channel;
 
+    /**
+     * Netty的Reactor模型的BossReactor，用于接收客户端的连接请求【不处理数据读写请求】，一般就是一个线程【一个多路复用器Selector】
+     */
     private EventLoopGroup bossGroup;
+
+    /**
+     * Netty的Reactor模型的WorkerReactor，用于接收客户端的读写请求【不处理数据连接请求】，一般就是一个线程【一个多路复用器Selector】，
+     * 此处就是通过IoThreads来配置该线程数
+     */
     private EventLoopGroup workerGroup;
 
     /**
+     * 创建Netty Server
+     *
      * @param url
      * @param handler 事件处理器
      * @throws RemotingException
      */
     public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
-        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
-        // the handler will be warped: MultiMessageHandler->HeartbeatHandler->handler，其中handler又是一个代理模型
         super(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME), ChannelHandlers.wrap(handler, url));
     }
 
@@ -87,8 +99,9 @@ public class NettyServer extends AbstractServer implements RemotingServer {
      */
     @Override
     protected void doOpen() throws Throwable {
-
+        // 创建Netty ServerBootstrap
         bootstrap = new ServerBootstrap();
+
         // Reactor模型
         // Netty mainReactor：接收连接请求---->Selector
         bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
@@ -96,7 +109,9 @@ public class NettyServer extends AbstractServer implements RemotingServer {
         workerGroup = new NioEventLoopGroup(getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
                 new DefaultThreadFactory("NettyServerWorker", true));
 
-        // NettyServer也为一个ChannelHandler，最终会委派给内部的ChannelHandler来处理
+        /**
+         * NettyServerHandler是Netty的原生的Handler的实现，用于处理Netty的事件
+         */
         final NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(), this);
         channels = nettyServerHandler.getChannels();
 
@@ -106,21 +121,24 @@ public class NettyServer extends AbstractServer implements RemotingServer {
                 .childOption(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .childHandler(new ChannelInitializer<NioSocketChannel>() {
+                    /**
+                     * 每当一个新的连接进来，则会调用该方法来配置新建立的连接NioSocketChannel
+                     * @param ch
+                     * @throws Exception
+                     */
                     @Override
                     protected void initChannel(NioSocketChannel ch) throws Exception {
                         // FIXME: should we use getTimeout()?
                         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
-                        //
                         NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
                         if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
-                            ch.pipeline().addLast("negotiation",
-                                    SslHandlerInitializer.sslServerHandler(getUrl(), nettyServerHandler));
+                            ch.pipeline().addLast("negotiation", SslHandlerInitializer.sslServerHandler(getUrl(), nettyServerHandler));
                         }
                         // 定义HandlerPipeline
                         ch.pipeline()
-                                // 定义消息解码器
+                                // 定义消息解码器（接收消息时用）
                                 .addLast("decoder", adapter.getDecoder())
-                                // 定义消息编码器
+                                // 定义消息编码器（发送消息时用）
                                 .addLast("encoder", adapter.getEncoder())
                                 .addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
                                 // 定义Netty的事件处理器

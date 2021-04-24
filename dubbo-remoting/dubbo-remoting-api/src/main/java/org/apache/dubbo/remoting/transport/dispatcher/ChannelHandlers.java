@@ -42,8 +42,27 @@ public class ChannelHandlers {
         INSTANCE = instance;
     }
 
+    /**
+     * 包装Dispatcher的SPI扩展
+     *
+     * @param handler
+     * @param url
+     * @return
+     */
     protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
-        return new MultiMessageHandler(new HeartbeatHandler(ExtensionLoader.getExtensionLoader(Dispatcher.class)
-                .getAdaptiveExtension().dispatch(handler, url)));
+        /**
+         * 事件分发器扩展点【dubbo线程模型扩展点】
+         */
+        Dispatcher adaptiveDispatcher = ExtensionLoader.getExtensionLoader(Dispatcher.class).getAdaptiveExtension();
+
+        /**
+         * 事件分发处理器
+         */
+        ChannelHandler dispatchHandler = adaptiveDispatcher.dispatch(handler, url);
+
+        /**
+         * 创建处理器链
+         */
+        return new MultiMessageHandler(new HeartbeatHandler(dispatchHandler));
     }
 }

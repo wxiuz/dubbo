@@ -87,7 +87,10 @@ public class DefaultFuture extends CompletableFuture<Object> {
     }
 
     /**
-     * check time out of the future
+     * 检查服务调用是否超时，Dubbo的使用时间轮定时器来处理定时任务，而不是使用jdk自带的工具，所以具有很高的性能。
+     * 因为jdk自带的定时器存在性能问题，在duboo高并发调用时需要为每个调用都开启超时检查任务，所以dubbo使用了高
+     * 性能的时间轮定时器实现。
+     * 对于时间轮定时器，当任务到达超时时间时，此时会触发该任务
      */
     private static void timeoutCheck(DefaultFuture future) {
         TimeoutCheckTask task = new TimeoutCheckTask(future.getId());
@@ -107,7 +110,9 @@ public class DefaultFuture extends CompletableFuture<Object> {
     public static DefaultFuture newFuture(Channel channel, Request request, int timeout, ExecutorService executor) {
         final DefaultFuture future = new DefaultFuture(channel, request, timeout);
         future.setExecutor(executor);
-        // timeout check
+        /**
+         * 开启服务调用超时检查
+         */
         timeoutCheck(future);
         return future;
     }
@@ -150,21 +155,36 @@ public class DefaultFuture extends CompletableFuture<Object> {
         }
     }
 
+    /**
+     * 服务端正常返回
+     *
+     * @param channel
+     * @param response
+     */
     public static void received(Channel channel, Response response) {
         received(channel, response, false);
     }
 
+    /**
+     * 客户端发送或服务端返回超时自动设置异常
+     *
+     * @param channel
+     * @param response
+     * @param timeout
+     */
     public static void received(Channel channel, Response response, boolean timeout) {
         try {
+            // 获取对应的请求调用任务
             DefaultFuture future = FUTURES.remove(response.getId());
             if (future != null) {
                 Timeout t = future.timeoutCheckTask;
+                // 如果是正常返回，此时需要将超时的监听任务取消
                 if (!timeout) {
-                    // decrease Time
                     t.cancel();
                 }
                 future.doReceived(response);
             } else {
+                // 当客户端检测到超时后，自动为当前请求设置为超时响应，但是过了一段时间后，服务端又正常返回，此时会打印服务端正常返回的信息
                 logger.warn("The timeout response finally returned at "
                         + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
                         + ", response " + response
@@ -191,15 +211,23 @@ public class DefaultFuture extends CompletableFuture<Object> {
         this.cancel(true);
     }
 
+    /**
+     * 为当前任务设置响应结果，该结果可能是正常服务端返回结果，也可能是客户端检测到超时后，自动设置的异常超时结果
+     *
+     * @param res
+     */
     private void doReceived(Response res) {
         if (res == null) {
             throw new IllegalStateException("response cannot be null");
         }
+        // 请求正常返回
         if (res.getStatus() == Response.OK) {
             this.complete(res.getResult());
+            // 调用超时
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage()));
         } else {
+            // 其他异常
             this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
         }
 
@@ -264,20 +292,29 @@ public class DefaultFuture extends CompletableFuture<Object> {
             this.requestID = requestID;
         }
 
+        /**
+         * 当达到该任务的超时间，此时会调用该方法触发该任务
+         *
+         * @param timeout a handle which is associated with this task
+         */
         @Override
         public void run(Timeout timeout) {
+            // 获取当前任务监控的调用请求
             DefaultFuture future = DefaultFuture.getFuture(requestID);
+            // 如果请求已经完成【已经成功返回】
             if (future == null || future.isDone()) {
                 return;
             }
+            // 如果到了超时时间该调用还没返回，此时会自动为当前请求设置为超时
             if (future.getExecutor() != null) {
                 future.getExecutor().execute(() -> {
-                    // create exception response.
+                    // 创建超时的响应
                     Response timeoutResponse = new Response(future.getId());
-                    // set timeout status.
+                    // 判断是客户端超时还是服务端超时
                     timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
+                    // 获取超时的信息
                     timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
-                    // handle response.
+                    // 为当前请求返回超时的结果
                     DefaultFuture.received(future.getChannel(), timeoutResponse, true);
                 });
             }

@@ -48,6 +48,13 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
     public void connected(Channel channel) throws RemotingException {
         setReadTimestamp(channel);
         setWriteTimestamp(channel);
+        /**
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.all.AllChannelHandler#connected(Channel)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.direct.DirectChannelHandler#connected(Channel)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.connection.ConnectionOrderedChannelHandler#connected(Channel)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.execution.ExecutionChannelHandler#connected(Channel)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.message.MessageOnlyChannelHandler#connected(Channel)}
+         */
         handler.connected(channel);
     }
 
@@ -55,12 +62,26 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
     public void disconnected(Channel channel) throws RemotingException {
         clearReadTimestamp(channel);
         clearWriteTimestamp(channel);
+        /**
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.all.AllChannelHandler#disconnected(Channel)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.direct.DirectChannelHandler#disconnected(Channel)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.connection.ConnectionOrderedChannelHandler#disconnected(Channel)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.execution.ExecutionChannelHandler#disconnected(Channel)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.message.MessageOnlyChannelHandler#disconnected(Channel)}
+         */
         handler.disconnected(channel);
     }
 
     @Override
     public void sent(Channel channel, Object message) throws RemotingException {
         setWriteTimestamp(channel);
+        /**
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.all.AllChannelHandler#sent(Channel, Object)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.direct.DirectChannelHandler#sent(Channel, Object)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.connection.ConnectionOrderedChannelHandler#sent(Channel, Object)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.execution.ExecutionChannelHandler#sent(Channel, Object)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.message.MessageOnlyChannelHandler#sent(Channel, Object)}
+         */
         handler.sent(channel, message);
     }
 
@@ -90,6 +111,13 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
             }
             return;
         }
+        /**
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.all.AllChannelHandler#received(Channel, Object)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.direct.DirectChannelHandler#received(Channel, Object)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.connection.ConnectionOrderedChannelHandler#received(Channel, Object)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.execution.ExecutionChannelHandler#received(Channel, Object)}
+         * {@link org.apache.dubbo.remoting.transport.dispatcher.message.MessageOnlyChannelHandler#received(Channel, Object)}
+         */
         handler.received(channel, message);
     }
 

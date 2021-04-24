@@ -32,6 +32,13 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
         super(handler);
     }
 
+    /**
+     * 接收消息
+     *
+     * @param channel channel.
+     * @param message message.
+     * @throws RemotingException
+     */
     @SuppressWarnings("unchecked")
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
@@ -39,11 +46,19 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
             // 如果收到的消息为MultiMessage，则需要将消息拆分为单个的消息去处理
             MultiMessage list = (MultiMessage) message;
             for (Object obj : list) {
-                // 交由实际的事件处理器进行处理
+                /**
+                 * 交由实际的事件处理器进行处理
+                 *
+                 * {@link org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandler#received(Channel, Object)}
+                 */
                 handler.received(channel, obj);
             }
         } else {
-            // 如果收到的消息就是单个消息，则直接交由处理器处理
+            /**
+             * 交由实际的事件处理器进行处理
+             *
+             * {@link org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandler#received(Channel, Object)}
+             */
             handler.received(channel, message);
         }
     }

@@ -56,6 +56,16 @@ public class JdkProxyFactory extends AbstractProxyFactory {
     @Override
     public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) {
         return new AbstractProxyInvoker<T>(proxy, type, url) {
+            /**
+             * 真实服务对象的方法调用
+             *
+             * @param proxy
+             * @param methodName
+             * @param parameterTypes
+             * @param arguments
+             * @return
+             * @throws Throwable
+             */
             @Override
             protected Object doInvoke(T proxy, String methodName,
                                       Class<?>[] parameterTypes,

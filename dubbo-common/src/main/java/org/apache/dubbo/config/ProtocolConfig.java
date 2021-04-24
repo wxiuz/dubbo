@@ -69,7 +69,7 @@ public class ProtocolConfig extends AbstractConfig {
     private Integer threads;
 
     /**
-     * 处理IO事件的线程数
+     * Dubbo协议中使用Netty进行通信，IoThreads指的是Netty Reactor模型中SubReactor数量
      */
     private Integer iothreads;
 
@@ -164,7 +164,7 @@ public class ProtocolConfig extends AbstractConfig {
     private String status;
 
     /**
-     * Whether to register
+     * 当前协议导出的服务是否需要注册到注册中心
      */
     private Boolean register;
 

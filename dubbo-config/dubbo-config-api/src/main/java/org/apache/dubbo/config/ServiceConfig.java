@@ -34,10 +34,7 @@ import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.metadata.WritableMetadataService;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
@@ -161,26 +158,21 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             bootstrap.init();
         }
 
+        // 为Service配置ProviderConfig, ProtocolConfig, RegistryConfig
         checkAndUpdateSubConfigs();
 
-        //init serviceMetadata
-        // 服务版本号
         serviceMetadata.setVersion(version);
-        // 服务所属组
         serviceMetadata.setGroup(group);
-        // 服务默认组
         serviceMetadata.setDefaultGroup(group);
-        // 服务的接口
         serviceMetadata.setServiceType(getInterfaceClass());
-        // 服务的接口
         serviceMetadata.setServiceInterfaceName(getInterface());
-        // 服务实例
         serviceMetadata.setTarget(getRef());
 
         if (shouldDelay()) {
             // 如果延迟导出，则延迟指定时间后再导出服务
             DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
         } else {
+            // 服务导出
             doExport();
         }
     }
@@ -188,11 +180,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private void checkAndUpdateSubConfigs() {
         // 补充完成一些配置信息
         completeCompoundConfigs();
-        // ProviderConfig
+        // 为ServiceConfig设置ProviderConfig
         checkDefault();
+        // 为ServiceConfig设置ProtocolConfig
         checkProtocol();
         // 如果Dubbo服务的协议不是injvm，则需要检查注册中心配置
         if (!isOnlyInJvm()) {
+            // 为ServiceConfig设置RegistryConfig
             checkRegistry();
         }
         this.refresh();
@@ -480,7 +474,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
                         /**
                          * 创建真实服务的代理对象Invoker，此处并没有使用jdk动态代理来生成代理对象，而是直接通过Invoker
-                         * 来包装真实对象，并充当代理对象
+                         * 来包装真实对象，并充当代理对象。
+                         *
+                         * PROXY_FACTORY可以参考{@link org.apache.dubbo.rpc.proxy.jdk.JdkProxyFactory}
+                         *
+                         * 返回的是包含{@link java.util.concurrent.CompletableFuture<AppResponse >}的 {@link org.apache.dubbo.rpc.AsyncRpcResult}。
                          *
                          */
                         Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL);
@@ -491,9 +489,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
                         /**
-                         * 将真实服务的的代理Invoker暴露到对应的协议服务端上并将服务端信息注册到注册中心
+                         * 将真实服务的的代理Invoker暴露到对应的协议服务端上并将服务端信息注册到注册中心，此处的URL协议为registry，
+                         * 由于Dubbo SPI的AOP机制，此处的调用链路为
                          *
-                         * 实际上会调用到{@link org.apache.dubbo.registry.integration.RegistryProtocol#export(Invoker)}
+                         * {@link org.apache.dubbo.rpc.Protocol$Adaptive#export(Invoker)}                  =>
+                         * {@link org.apache.dubbo.rpc.protocol.ProtocolListenerWrapper#export(Invoker)}   =>
+                         * {@link org.apache.dubbo.rpc.protocol.ProtocolFilterWrapper#export(Invoker)}     =>
+                         * {@link org.apache.dubbo.registry.integration.RegistryProtocol#export(Invoker)}
                          *
                          */
                         Exporter<?> exporter = protocol.export(wrapperInvoker);

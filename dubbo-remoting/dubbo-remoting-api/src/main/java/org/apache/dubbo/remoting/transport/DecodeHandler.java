@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler;
 
 /**
  * 解码处理器
@@ -58,6 +59,9 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
             decode(((Response) message).getResult());
         }
 
+        /**
+         * {@link HeaderExchangeHandler#received(Channel, Object)}
+         */
         handler.received(channel, message);
     }
 

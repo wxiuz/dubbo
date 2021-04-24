@@ -46,6 +46,7 @@ import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.apache.dubbo.common.constants.CommonConstants.*;
@@ -238,6 +239,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
          * 创建客户端调用服务端的代理对象Invoker，本质上是通过cluster创建一个ClusterInvoker
          * 该Invoker包含了集群调用的容错处理机制，以及负载均衡策略以及路由规则
          * {@link org.apache.dubbo.rpc.cluster.Cluster}
+         * {@link org.apache.dubbo.rpc.proxy.AbstractProxyFactory#getProxy(Invoker)}
+         * {@link org.apache.dubbo.rpc.proxy.InvokerInvocationHandler#invoke(Object, Method, Object[])}
          */
         ref = createProxy(map);
 
@@ -251,6 +254,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         dispatch(new ReferenceConfigInitializedEvent(this, invoker));
     }
 
+    /**
+     * Consumer端创建服务端调用的代理对象
+     *
+     * @param map
+     * @return
+     */
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
         if (shouldJvmRefer(map)) {
@@ -298,6 +307,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             }
 
             if (urls.size() == 1) {
+                /**
+                 * 创建一个ClusterInvoker对象
+                 */
                 // ProtocolFilterWrapper -->QosProtocolWrapper-->ProtocolListenerWrapper，返回一个ClusterInvoker
                 invoker = REF_PROTOCOL.refer(interfaceClass, urls.get(0));
             } else {
@@ -345,7 +357,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
             metadataService.publishServiceDefinition(consumerURL);
         }
-        // 创建一个服务代理，内部包含了Invoker
+
+        /**
+         * 创建一个服务代理，内部包含了Invoker，该代理的内部Invoker为一个ClusterInvoker
+         * {@link org.apache.dubbo.rpc.proxy.AbstractProxyFactory#getProxy(Invoker)}
+         * {@link org.apache.dubbo.rpc.proxy.InvokerInvocationHandler#invoke(Object, Method, Object[])}
+         */
         return (T) PROXY_FACTORY.getProxy(invoker);
     }
 

@@ -76,79 +76,8 @@ public class ProtocolFilterWrapper implements Protocol {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final Filter filter = filters.get(i);
                 last = new FilterWrapperInvoker<>(invoker, last, filter);
-               /*
-                final Invoker<T> next = last;
-                // 将Filter包装在Invoker中
-                last = new Invoker<T>() {
-
-                    @Override
-                    public Class<T> getInterface() {
-                        return invoker.getInterface();
-                    }
-
-                    @Override
-                    public URL getUrl() {
-                        return invoker.getUrl();
-                    }
-
-                    @Override
-                    public boolean isAvailable() {
-                        return invoker.isAvailable();
-                    }
-
-                    @Override
-                    public Result invoke(Invocation invocation) throws RpcException {
-                        Result asyncResult;
-                        try {
-                            asyncResult = filter.invoke(next, invocation);
-                        } catch (Exception e) {
-                            if (filter instanceof ListenableFilter) {// Deprecated!
-                                Filter.Listener listener = ((ListenableFilter) filter).listener();
-                                if (listener != null) {
-                                    listener.onError(e, invoker, invocation);
-                                }
-                            } else if (filter instanceof Filter.Listener) {
-                                Filter.Listener listener = (Filter.Listener) filter;
-                                listener.onError(e, invoker, invocation);
-                            }
-                            throw e;
-                        } finally {
-
-                        }
-                        return asyncResult.whenCompleteWithContext((r, t) -> {
-                            if (filter instanceof ListenableFilter) {// Deprecated!
-                                Filter.Listener listener = ((ListenableFilter) filter).listener();
-                                if (listener != null) {
-                                    if (t == null) {
-                                        listener.onMessage(r, invoker, invocation);
-                                    } else {
-                                        listener.onError(t, invoker, invocation);
-                                    }
-                                }
-                            } else if (filter instanceof Filter.Listener) {
-                                Filter.Listener listener = (Filter.Listener) filter;
-                                if (t == null) {
-                                    listener.onMessage(r, invoker, invocation);
-                                } else {
-                                    listener.onError(t, invoker, invocation);
-                                }
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void destroy() {
-                        invoker.destroy();
-                    }
-
-                    @Override
-                    public String toString() {
-                        return invoker.toString();
-                    }
-                };*/
             }
         }
-
         return last;
     }
 
@@ -176,6 +105,16 @@ public class ProtocolFilterWrapper implements Protocol {
         /**
          * 如果是真实服务暴露，则需要构建调用链，最后传给protocol的则是经过Filter包装过的Invoker对象，即
          * Invoker1-->Filter1-->Invoker2-->Filter2-->Invoker3-->Filter3-->......-->InvokerN-->FilterN--->原始Invoker【包含真实服务对象的Invoker】
+         *
+         * {@link org.apache.dubbo.rpc.filter.EchoFilter}
+         * {@link org.apache.dubbo.rpc.filter.ClassLoaderFilter}
+         * {@link org.apache.dubbo.rpc.filter.GenericFilter}
+         * {@link org.apache.dubbo.rpc.filter.ContextFilter}
+         * {@link org.apache.dubbo.rpc.filter.LogFilter}
+         * {@link org.apache.dubbo.rpc.filter.TraceFilter}
+         * {@link org.apache.dubbo.rpc.filter.TimeoutFilter}
+         * {@link org.apache.dubbo.rpc.filter.MonitorFilter}
+         * {@link org.apache.dubbo.rpc.filter.ExceptionFilter}
          */
         return protocol.export(buildInvokerChain(invoker, SERVICE_FILTER_KEY, CommonConstants.PROVIDER));
     }

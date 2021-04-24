@@ -24,30 +24,18 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
-import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.monitor.Constants.COUNT_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
 import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
+
 /**
  * MonitorFilter. (SPI, Singleton, ThreadSafe)
  */
@@ -84,13 +72,18 @@ public class MonitorFilter implements Filter, Filter.Listener {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
             invocation.setAttachment(MONITOR_FILTER_START_TIME, String.valueOf(System.currentTimeMillis()));
-            getConcurrent(invoker, invocation).incrementAndGet(); // count up
+            getConcurrent(invoker, invocation).incrementAndGet();
         }
-        return invoker.invoke(invocation); // proceed invocation chain
+        return invoker.invoke(invocation);
     }
 
-    // concurrent counter
+    /**
+     * @param invoker
+     * @param invocation
+     * @return
+     */
     private AtomicInteger getConcurrent(Invoker<?> invoker, Invocation invocation) {
+        // 接口方法维度统计
         String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
         AtomicInteger concurrent = concurrents.get(key);
         if (concurrent == null) {
@@ -100,14 +93,31 @@ public class MonitorFilter implements Filter, Filter.Listener {
         return concurrent;
     }
 
+    /**
+     * 当MonitorFilter调用成功后会触发调用该方法
+     *
+     * @param result
+     * @param invoker
+     * @param invocation
+     * @see org.apache.dubbo.rpc.protocol.FilterWrapperInvoker
+     */
     @Override
     public void onMessage(Result result, Invoker<?> invoker, Invocation invocation) {
         if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
+            // 监控数据推送
             collect(invoker, invocation, result, RpcContext.getContext().getRemoteHost(), Long.valueOf((String) invocation.getAttachment(MONITOR_FILTER_START_TIME)), false);
-            getConcurrent(invoker, invocation).decrementAndGet(); // count down
+            getConcurrent(invoker, invocation).decrementAndGet();
         }
     }
 
+    /**
+     * 当MonitorFilter调用失败后回触发调用该方法
+     *
+     * @param t
+     * @param invoker
+     * @param invocation
+     * @see org.apache.dubbo.rpc.protocol.FilterWrapperInvoker
+     */
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
         if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
@@ -129,6 +139,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
     private void collect(Invoker<?> invoker, Invocation invocation, Result result, String remoteHost, long start, boolean error) {
         try {
             URL monitorUrl = invoker.getUrl().getUrlParameter(MONITOR_KEY);
+            // 监控具体监控的实现
             Monitor monitor = monitorFactory.getMonitor(monitorUrl);
             if (monitor == null) {
                 return;

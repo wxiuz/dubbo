@@ -46,6 +46,9 @@ public class NettyServerHandler extends ChannelDuplexHandler {
 
     private final URL url;
 
+    /**
+     * 该ChannelHandler为 {@link NettyServer}
+     */
     private final ChannelHandler handler;
 
     public NettyServerHandler(URL url, ChannelHandler handler) {
@@ -75,6 +78,9 @@ public class NettyServerHandler extends ChannelDuplexHandler {
         if (channel != null) {
             channels.put(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), channel);
         }
+        /**
+         * {@link NettyServer#connected(Channel)}
+         */
         handler.connected(channel);
 
         if (logger.isInfoEnabled()) {
@@ -93,6 +99,9 @@ public class NettyServerHandler extends ChannelDuplexHandler {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         try {
             channels.remove(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()));
+            /**
+             * {@link NettyServer#disconnected(Channel)}
+             */
             handler.disconnected(channel);
         } finally {
             NettyChannel.removeChannel(ctx.channel());
@@ -113,6 +122,9 @@ public class NettyServerHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        /**
+         * {@link NettyServer#received(Channel, Object)}
+         */
         handler.received(channel, msg);
     }
 
@@ -128,6 +140,9 @@ public class NettyServerHandler extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         super.write(ctx, msg, promise);
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        /**
+         * {@link NettyServer#sent(Channel, Object)}
+         */
         handler.sent(channel, msg);
     }
 
@@ -151,6 +166,9 @@ public class NettyServerHandler extends ChannelDuplexHandler {
             throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         try {
+            /**
+             * {@link NettyServer#caught(Channel, Throwable)}
+             */
             handler.caught(channel, cause);
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.channel());

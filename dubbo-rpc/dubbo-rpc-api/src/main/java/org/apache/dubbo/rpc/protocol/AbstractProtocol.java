@@ -104,6 +104,16 @@ public abstract class AbstractProtocol implements Protocol {
         }
     }
 
+    /**
+     * 构建一个异步转同步的Invoker
+     *
+     * @param type Service class
+     * @param url  URL address for the remote service
+     * @param <T>
+     * @return
+     * @throws RpcException
+     * @see org.apache.dubbo.rpc.protocol.AsyncToSyncInvoker
+     */
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         return new AsyncToSyncInvoker<>(protocolBindingRefer(type, url));
