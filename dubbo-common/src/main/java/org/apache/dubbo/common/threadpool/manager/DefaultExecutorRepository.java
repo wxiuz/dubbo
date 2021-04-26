@@ -50,9 +50,18 @@ public class DefaultExecutorRepository implements ExecutorRepository {
         serviceExporterExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-exporter-scheduler"));
     }
 
+    /**
+     * 根据配置创建线程池，Dubbo客户端与服务端都使用该方法来创建线程池
+     *
+     * @param url
+     * @return
+     */
     @Override
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
         String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
+        /**
+         * 如果是客户端端
+         */
         if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
             componentKey = CONSUMER_SIDE;
         }

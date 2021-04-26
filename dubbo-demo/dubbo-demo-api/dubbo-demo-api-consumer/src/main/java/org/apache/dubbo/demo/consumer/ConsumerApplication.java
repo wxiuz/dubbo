@@ -42,9 +42,10 @@ public class ConsumerApplication {
                 .reference(reference)
                 .start();
 
-        String message = ReferenceConfigCache.getCache().get(reference).hello("dubbo");
-        System.out.println(message);
-        System.in.read();
+        for (int i = 1; i <= 10; i++) {
+            String message = ReferenceConfigCache.getCache().get(reference).hello("dubbo");
+            System.out.println(message);
+        }
     }
 
 }

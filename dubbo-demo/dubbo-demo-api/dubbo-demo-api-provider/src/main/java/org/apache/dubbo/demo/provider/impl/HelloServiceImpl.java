@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 public class HelloServiceImpl implements HelloService {
     @Override
     public String hello(String msg) {
+        System.out.println(">>>>>>>>>>>>>>>>>>" + msg);
         return "hello " + msg;
     }
 

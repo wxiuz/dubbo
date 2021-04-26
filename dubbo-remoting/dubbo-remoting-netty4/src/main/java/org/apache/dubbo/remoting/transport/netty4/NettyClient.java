@@ -16,18 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.transport.AbstractClient;
-import org.apache.dubbo.remoting.utils.UrlUtils;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -39,6 +27,17 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.transport.AbstractClient;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import java.net.InetSocketAddress;
 
@@ -52,7 +51,7 @@ public class NettyClient extends AbstractClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
     /**
-     * netty client bootstrap
+     * 客户端默认处理监听IO事件的线程池【一个线程对应一个NIO的Selector】
      */
     private static final NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
 
@@ -76,18 +75,21 @@ public class NettyClient extends AbstractClient {
      * It wil init and start netty.
      */
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
-    	// you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
-    	// the handler will be warped: MultiMessageHandler->HeartbeatHandler->handler
-    	super(url, wrapChannelHandler(url, handler));
+        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
+        // the handler will be warped: MultiMessageHandler->HeartbeatHandler->handler
+        super(url, wrapChannelHandler(url, handler));
     }
 
     /**
-     * Init bootstrap
+     * 初始化 bootstrap ，不做真实的连接动作
      *
      * @throws Throwable
      */
     @Override
     protected void doOpen() throws Throwable {
+        /**
+         * 创建Netty原生的处理器
+         */
         final NettyClientHandler nettyClientHandler = new NettyClientHandler(getUrl(), this);
         bootstrap = new Bootstrap();
         bootstrap.group(nioEventLoopGroup)
@@ -100,8 +102,16 @@ public class NettyClient extends AbstractClient {
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(3000, getConnectTimeout()));
         bootstrap.handler(new ChannelInitializer() {
 
+            /**
+             * 每当客户端与服务端成功建立了一个真实连接，此时会调用该方法来初始化该连接
+             * @param ch
+             * @throws Exception
+             */
             @Override
             protected void initChannel(Channel ch) throws Exception {
+                /**
+                 * 客户端向服务端发送心跳的间隔
+                 */
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
 
                 if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
@@ -116,7 +126,7 @@ public class NettyClient extends AbstractClient {
                         .addLast("handler", nettyClientHandler);
 
                 String socksProxyHost = ConfigUtils.getProperty(SOCKS_PROXY_HOST);
-                if(socksProxyHost != null) {
+                if (socksProxyHost != null) {
                     int socksProxyPort = Integer.parseInt(ConfigUtils.getProperty(SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
                     Socks5ProxyHandler socks5ProxyHandler = new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort));
                     ch.pipeline().addFirst(socks5ProxyHandler);
@@ -125,9 +135,17 @@ public class NettyClient extends AbstractClient {
         });
     }
 
+    /**
+     * 真实的向服务端发起连接请求动作
+     *
+     * @throws Throwable
+     */
     @Override
     protected void doConnect() throws Throwable {
         long start = System.currentTimeMillis();
+        /**
+         * 使用Netty向服务端发起连接请求
+         */
         ChannelFuture future = bootstrap.connect(getConnectAddress());
         try {
             boolean ret = future.awaitUninterruptibly(getConnectTimeout(), MILLISECONDS);

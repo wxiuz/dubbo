@@ -24,11 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Client;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.*;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
 import java.net.InetSocketAddress;
@@ -48,6 +44,9 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private static final Logger logger = LoggerFactory.getLogger(AbstractClient.class);
     private final Lock connectLock = new ReentrantLock();
     private final boolean needReconnect;
+    /**
+     * 客户端用来处理业务的线程池，默认是Cached线程池
+     */
     protected volatile ExecutorService executor;
     private ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
@@ -55,10 +54,15 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         super(url, handler);
 
         needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, false);
-
+        /**
+         * 构建客户端线程池
+         */
         initExecutor(url);
 
         try {
+            /**
+             * 创建Netty的Client端，但是不做connect操作
+             */
             doOpen();
         } catch (Throwable t) {
             close();
@@ -178,6 +182,11 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         channel.send(message, sent);
     }
 
+    /**
+     * 客户端向服务端发起连接请求
+     *
+     * @throws RemotingException
+     */
     protected void connect() throws RemotingException {
 
         connectLock.lock();

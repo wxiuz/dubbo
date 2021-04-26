@@ -440,6 +440,13 @@ public class DubboProtocol extends AbstractProtocol {
         return invoker;
     }
 
+    /**
+     * 获取客户端到服务端的连接，Dubbo使用的是长连接，所以在为每个Consumer创建连接时，默认使用的是共享连接。
+     * 即所有不同的Consumer都使用固定的多个连接来与服务端进行通信
+     *
+     * @param url
+     * @return
+     */
     private ExchangeClient[] getClients(URL url) {
         // whether to share connection
 
@@ -447,16 +454,20 @@ public class DubboProtocol extends AbstractProtocol {
 
         int connections = url.getParameter(CONNECTIONS_KEY, 0);
         List<ReferenceCountExchangeClient> shareClients = null;
-        // if not configured, connection is shared, otherwise, one connection for one service
+        /**
+         * 如果没有为当前Consumer配置连接数，此时就使用共享的连接
+         */
         if (connections == 0) {
             useShareConnect = true;
-
-            /**
-             * The xml configuration should have a higher priority than properties.
-             */
             String shareConnectionsStr = url.getParameter(SHARE_CONNECTIONS_KEY, (String) null);
+            /**
+             * 默认的共享连接数为1个连接
+             */
             connections = Integer.parseInt(StringUtils.isBlank(shareConnectionsStr) ? ConfigUtils.getProperty(SHARE_CONNECTIONS_KEY,
                     DEFAULT_SHARE_CONNECTIONS) : shareConnectionsStr);
+            /**
+             * 创建真实的连接
+             */
             shareClients = getSharedClient(url, connections);
         }
 
