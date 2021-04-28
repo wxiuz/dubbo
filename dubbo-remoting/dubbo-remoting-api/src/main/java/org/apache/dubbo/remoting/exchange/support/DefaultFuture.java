@@ -50,17 +50,33 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
     private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<>();
 
+    /**
+     * 存储了所有还未结束的请求对应的Future任务
+     */
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
+    /**
+     * 时间轮算法实现的定时器，比jdk自带的定时器效率高，因为Dubbo要支持高并发场景，每个请求都要
+     * 需要一个定时器，所以如果使用jdk定时器来处理（底层使用优先级队列或者最小堆实现来实现），
+     * 性能存在问题，同时有些任务存在延迟。时间轮定时器是一个高效率的定时器。
+     */
     public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
             new NamedThreadFactory("dubbo-future-timeout", true),
             30,
             TimeUnit.MILLISECONDS);
 
-    // invoke id.
+    /**
+     * 当前任务的请求ID
+     */
     private final Long id;
     private final Channel channel;
+    /**
+     * 当前任务的请求内容
+     */
     private final Request request;
+    /**
+     * 当前任务超时时间
+     */
     private final int timeout;
     private final long start = System.currentTimeMillis();
     private volatile long sent;
@@ -284,6 +300,9 @@ public class DefaultFuture extends CompletableFuture<Object> {
         return newRequest;
     }
 
+    /**
+     * 任务超时处理任务
+     */
     private static class TimeoutCheckTask implements TimerTask {
 
         private final Long requestID;

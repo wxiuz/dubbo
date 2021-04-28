@@ -40,6 +40,9 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class DubboInvoker<T> extends AbstractInvoker<T> {
 
+    /**
+     * 一个Dubbo的Consumer可以与一个Dubbo Provider建立多个物理连接，Dubbo协议默认是所有不同服务的Consumer都共享一个物理长连接
+     */
     private final ExchangeClient[] clients;
 
     private final AtomicPositiveInteger index = new AtomicPositiveInteger();
@@ -80,6 +83,9 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         if (clients.length == 1) {
             currentClient = clients[0];
         } else {
+            /**
+             * 如果一个Consumer与一个Provider有多个物理连接，则每次请求按照轮询的方式获取一个连接来发送请求
+             */
             currentClient = clients[index.getAndIncrement() % clients.length];
         }
         try {
