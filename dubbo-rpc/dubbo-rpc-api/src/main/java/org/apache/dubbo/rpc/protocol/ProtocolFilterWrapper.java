@@ -74,7 +74,7 @@ public class ProtocolFilterWrapper implements Protocol {
 
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
-                final Filter filter = filters.get(i);
+                Filter filter = filters.get(i);
                 last = new FilterWrapperInvoker<>(invoker, last, filter);
             }
         }
