@@ -38,14 +38,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.*;
 /**
  * Dubbo的SPI机制实现，Dubbo SPI并不是Java SPI，而是根据Java SPI思想，重新实现了
  * 一套自己的SPI机制。其比Java SPI功能更加强大，其实现了
- * （1）按需创建实例
- * （2）支持IOC
- * （3）支持AOP
+ * <p>（1）按需创建实例</p>
+ * <p>（2）支持IOC</p>
+ * <p>（3）支持AOP</p>
  *
  * <p>
  * 注：
- * （1）Dubbo中的所有需要作为SPI的接口，都必须使用@SPI进行标记。
- * （2）Dubbo中每个SPI的实现都有一个唯一的名字，所以在SPI配置文件中以key-value形式配置
+ * <p>（1）Dubbo中的所有需要作为SPI的接口，都必须使用@SPI进行标记。</p>
+ * <p>（2）Dubbo中每个SPI的实现都有一个唯一的名字，所以在SPI配置文件中以key-value形式配置</p>
  *
  * </ul>
  *
@@ -93,6 +93,9 @@ public class ExtensionLoader<T> {
      */
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<>();
 
+    /**
+     * 当前SPI的name到Impl的映射
+     */
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
     /**
@@ -100,6 +103,9 @@ public class ExtensionLoader<T> {
      */
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<>();
 
+    /**
+     * SPI实例，name到instance实现的映射
+     */
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
 
     /**

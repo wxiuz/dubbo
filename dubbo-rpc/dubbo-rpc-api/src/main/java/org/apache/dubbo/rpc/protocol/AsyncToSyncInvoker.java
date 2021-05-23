@@ -52,6 +52,11 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
         Result asyncResult = invoker.invoke(invocation);
 
         try {
+            /**
+             * 如果是同步方法调用，此时通过Future.get方法来获取结果，从而达到阻塞的作用，注意超时判断
+             * 不是在该处处理，而是在调用时通过定时器来处理，所以此处get结果时设置的超时时间很长，因为
+             * 超时机制不是通过该处实现，该处只是为了让同步调用阻塞，直到有结果返回或超时
+             */
             if (InvokeMode.SYNC == ((RpcInvocation) invocation).getInvokeMode()) {
                 asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
             }
